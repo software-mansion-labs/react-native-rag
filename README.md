@@ -53,8 +53,10 @@ We offer three ways to integrate RAG, depending on your needs.
 
 The easiest way to get started. Good for simple use cases where you want to quickly set up RAG.
 
-```jsx
+```tsx
 import React, { useState } from 'react';
+import { Text } from 'react-native';
+
 import { useRAG } from 'react-native-rag';
 import {
   ALL_MINILM_L6_V2,
@@ -69,34 +71,36 @@ import {
 } from '@react-native-rag/executorch';
 import { MemoryVectorStore } from 'react-native-rag';
 
+const vectorStore = new MemoryVectorStore({
+  embeddings: new ExecuTorchEmbeddings({
+    modelSource: ALL_MINILM_L6_V2,
+    tokenizerSource: ALL_MINILM_L6_V2_TOKENIZER,
+  }),
+});
+
+const llm = new ExecuTorchLLM({
+  modelSource: LLAMA3_2_1B_QLORA,
+  tokenizerSource: LLAMA3_2_3B_TOKENIZER,
+  tokenizerConfigSource: LLAMA3_2_TOKENIZER_CONFIG,
+});
+
 const app = () => {
-  const [response, setResponse] = useState<string | null>(null);
-
-  const { generate } = useRAG({
-    vectorStore: new MemoryVectorStore({
-        embeddings: new ExecuTorchEmbeddings({
-            modelSource: ALL_MINILM_L6_V2,
-            tokenizerSource: ALL_MINILM_L6_V2_TOKENIZER,
-        })
-    }),
-    llm: new ExecuTorchLLM({
-      modelSource: LLAMA3_2_1B_QLORA,
-      tokenizerSource: LLAMA3_2_3B_TOKENIZER,
-      tokenizerConfigSource: LLAMA3_2_TOKENIZER_CONFIG,
-      responseCallback: setResponse,
-    }),
-  });
-
-  // ...
-}
+  const rag = useRAG({ vectorStore, llm });
+  
+  return (
+    <Text>{rag.response}</Text>
+  );
+};
 ```
 
 ### 2. Using the `RAG` Class
 
 For more control over components and configuration.
 
-```jsx
+```tsx
 import React, { useEffect, useState } from 'react';
+import { Text } from 'react-native';
+
 import { RAG, MemoryVectorStore } from 'react-native-rag';
 import {
   ExecuTorchEmbeddings,
@@ -140,7 +144,10 @@ const app = () => {
     };
     initializeRAG();
   }, []);
-  // ...
+
+  return (
+    <Text>{response}</Text>
+  );
 }
 ```
 
@@ -150,8 +157,10 @@ For advanced use cases requiring fine-grained control.
 
 This is the recommended way you if you want to implement semantic search in your app, use the `VectorStore` and `Embeddings` classes directly.
 
-```jsx
+```tsx
 import React, { useEffect, useState } from 'react';
+import { Text } from 'react-native';
+
 import { MemoryVectorStore } from 'react-native-rag';
 import {
   ExecuTorchEmbeddings,
@@ -198,7 +207,10 @@ const app = () => {
     };
     initializeRAG();
   }, []);
-  // ...
+  
+  return (
+    <Text>{response}</Text>
+  );
 }
 ```
 
