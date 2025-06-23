@@ -1,0 +1,19 @@
+{
+  "name": "@react-native-rag/executorch",
+  "version": "0.0.2",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "peerDependencies": {
+    "react-native-executorch": "^0.4.5",
+    "react-native-rag": "^0.0.1"
+  },
+  "devDependencies": {
+    "react-native-executorch": "^0.4.5",
+    "react-native-rag": "workspace:*"
+  }
+}

@@ -1,0 +1,71 @@
+import { LLMModule, type ChatConfig } from 'react-native-executorch';
+import { LLM, type ResourceSource, type Message } from 'react-native-rag';
+
+interface ExecuTorchLLMParams {
+  modelSource: ResourceSource;
+  tokenizerSource: ResourceSource;
+  tokenizerConfigSource: ResourceSource;
+
+  onDownloadProgress?: (progress: number) => void;
+  responseCallback?: (response: string) => void;
+  messageHistoryCallback?: (messageHistory: Message[]) => void;
+
+  chatConfig?: Partial<ChatConfig>;
+}
+
+export class ExecuTorchLLM implements LLM<ExecuTorchLLMParams> {
+  private modelSource: ResourceSource;
+  private tokenizerSource: ResourceSource;
+  private tokenizerConfigSource: ResourceSource;
+  private onDownloadProgress: (progress: number) => void;
+  private responseCallback: (response: string) => void;
+  private chatConfig: Partial<ChatConfig> | undefined;
+
+  private isLoaded = false;
+
+  constructor({
+    modelSource,
+    tokenizerSource,
+    tokenizerConfigSource,
+    onDownloadProgress = () => {},
+    responseCallback = () => {},
+    chatConfig,
+  }: ExecuTorchLLMParams) {
+    this.modelSource = modelSource;
+    this.tokenizerSource = tokenizerSource;
+    this.tokenizerConfigSource = tokenizerConfigSource;
+    this.onDownloadProgress = onDownloadProgress;
+    this.responseCallback = responseCallback;
+    this.chatConfig = chatConfig;
+  }
+
+  async load() {
+    if (!this.isLoaded) {
+      await LLMModule.load({
+        modelSource: this.modelSource,
+        tokenizerSource: this.tokenizerSource,
+        tokenizerConfigSource: this.tokenizerConfigSource,
+        onDownloadProgressCallback: this.onDownloadProgress,
+        responseCallback: this.responseCallback,
+      });
+      LLMModule.configure({
+        chatConfig: this.chatConfig,
+      });
+      this.isLoaded = true;
+    }
+    return this;
+  }
+
+  interrupt() {
+    LLMModule.interrupt();
+  }
+
+  delete() {
+    LLMModule.delete();
+  }
+
+  async generate(messages: Message[], callback: (token: string) => void) {
+    LLMModule.setTokenCallback({ tokenCallback: callback });
+    return LLMModule.generate(messages);
+  }
+}

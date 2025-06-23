@@ -1,0 +1,38 @@
+{
+  "name": "react-native-rag-example",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@expo/metro-runtime": "~5.0.4",
+    "@op-engineering/op-sqlite": "^14.0.3",
+    "@react-native-rag/executorch": "workspace:packages/executorch",
+    "@react-native-rag/op-sqlite": "workspace:packages/op-sqlite",
+    "expo": "~53.0.9",
+    "expo-status-bar": "~2.2.3",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-native": "0.79.2",
+    "react-native-executorch": "^0.4.5",
+    "react-native-rag": "workspace:*",
+    "react-native-safe-area-context": "^5.4.1",
+    "react-native-svg": "15.11.2",
+    "react-native-web": "~0.20.0"
+  },
+  "op-sqlite": {
+    "libsql": true,
+    "sqliteVec": true
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.0",
+    "react-native-builder-bob": "^0.40.11",
+    "react-native-monorepo-config": "^0.1.9",
+    "react-native-svg-transformer": "^1.5.1"
+  },
+  "private": true
+}
