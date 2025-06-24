@@ -1,5 +1,7 @@
 import {
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -30,30 +32,37 @@ export const DocumentModal = ({
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <SafeAreaProvider>
         <SafeAreaView style={documentModalStyles.safeArea}>
-          <View style={documentModalStyles.header}>
-            <Text style={documentModalStyles.title}>Document Editor</Text>
-            <TouchableOpacity
-              onPress={onClose}
-              style={documentModalStyles.closeButton}
-            >
-              <Ionicons name="close-outline" size={32} color="black" />
-            </TouchableOpacity>
-          </View>
-          <TextInput
-            value={document}
-            onChangeText={onDocumentChange}
-            placeholder="Paste your document here"
-            multiline
-            style={documentModalStyles.textInput}
-          />
-          <TouchableOpacity
-            onPress={onModifyDocument}
-            style={documentModalStyles.addButton}
+          <KeyboardAvoidingView
+            style={documentModalStyles.container}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           >
-            <Text style={documentModalStyles.buttonText}>
-              {ids.length > 0 ? 'Edit' : 'Add'} Document
-            </Text>
-          </TouchableOpacity>
+            <View style={documentModalStyles.innerContainer}>
+              <View style={documentModalStyles.header}>
+                <Text style={documentModalStyles.title}>Document Editor</Text>
+                <TouchableOpacity
+                  onPress={onClose}
+                  style={documentModalStyles.closeButton}
+                >
+                  <Ionicons name="close-outline" size={32} color="black" />
+                </TouchableOpacity>
+              </View>
+              <TextInput
+                value={document}
+                onChangeText={onDocumentChange}
+                placeholder="Paste your document here"
+                multiline
+                style={documentModalStyles.textInput}
+              />
+              <TouchableOpacity
+                onPress={onModifyDocument}
+                style={documentModalStyles.addButton}
+              >
+                <Text style={documentModalStyles.buttonText}>
+                  {ids.length > 0 ? 'Edit' : 'Add'} Document
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </KeyboardAvoidingView>
         </SafeAreaView>
       </SafeAreaProvider>
     </Modal>
@@ -62,6 +71,12 @@ export const DocumentModal = ({
 
 const documentModalStyles = StyleSheet.create({
   safeArea: {
+    flex: 1,
+  },
+  container: {
+    flex: 1,
+  },
+  innerContainer: {
     flex: 1,
     padding: 16,
   },
