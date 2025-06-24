@@ -1,7 +1,7 @@
 import { type Message, MemoryVectorStore, useRAG } from 'react-native-rag';
 import {
   LLAMA3_2_1B_QLORA,
-  LLAMA3_2_3B_TOKENIZER,
+  LLAMA3_2_1B_TOKENIZER,
   LLAMA3_2_TOKENIZER_CONFIG,
   ALL_MINILM_L6_V2,
   ALL_MINILM_L6_V2_TOKENIZER,
@@ -45,7 +45,7 @@ export default function App() {
   const llm = useMemo(() => {
     return new ExecuTorchLLM({
       modelSource: LLAMA3_2_1B_QLORA,
-      tokenizerSource: LLAMA3_2_3B_TOKENIZER,
+      tokenizerSource: LLAMA3_2_1B_TOKENIZER,
       tokenizerConfigSource: LLAMA3_2_TOKENIZER_CONFIG,
     });
   }, []);

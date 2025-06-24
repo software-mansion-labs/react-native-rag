@@ -57,19 +57,18 @@ The easiest way to get started. Good for simple use cases where you want to quic
 import React, { useState } from 'react';
 import { Text } from 'react-native';
 
-import { useRAG } from 'react-native-rag';
+import { useRAG, MemoryVectorStore } from 'react-native-rag';
 import {
   ALL_MINILM_L6_V2,
   ALL_MINILM_L6_V2_TOKENIZER,
   LLAMA3_2_1B_QLORA,
-  LLAMA3_2_3B_TOKENIZER,
+  LLAMA3_2_1B_TOKENIZER,
   LLAMA3_2_TOKENIZER_CONFIG,
 } from 'react-native-executorch';
 import {
   ExecuTorchEmbeddings,
   ExecuTorchLLM,
 } from '@react-native-rag/executorch';
-import { MemoryVectorStore } from 'react-native-rag';
 
 const vectorStore = new MemoryVectorStore({
   embeddings: new ExecuTorchEmbeddings({
@@ -80,7 +79,7 @@ const vectorStore = new MemoryVectorStore({
 
 const llm = new ExecuTorchLLM({
   modelSource: LLAMA3_2_1B_QLORA,
-  tokenizerSource: LLAMA3_2_3B_TOKENIZER,
+  tokenizerSource: LLAMA3_2_1B_TOKENIZER,
   tokenizerConfigSource: LLAMA3_2_TOKENIZER_CONFIG,
 });
 
@@ -110,7 +109,7 @@ import {
   ALL_MINILM_L6_V2,
   ALL_MINILM_L6_V2_TOKENIZER,
   LLAMA3_2_1B_QLORA,
-  LLAMA3_2_3B_TOKENIZER,
+  LLAMA3_2_1B_TOKENIZER,
   LLAMA3_2_TOKENIZER_CONFIG,
 } from 'react-native-executorch';
 
@@ -127,7 +126,7 @@ const app = () => {
 
       const llm = new ExecuTorchLLM({
         modelSource: LLAMA3_2_1B_QLORA,
-        tokenizerSource: LLAMA3_2_3B_TOKENIZER,
+        tokenizerSource: LLAMA3_2_1B_TOKENIZER,
         tokenizerConfigSource: LLAMA3_2_TOKENIZER_CONFIG,
         responseCallback: setResponse,
       });
@@ -170,7 +169,7 @@ import {
   ALL_MINILM_L6_V2,
   ALL_MINILM_L6_V2_TOKENIZER,
   LLAMA3_2_1B_QLORA,
-  LLAMA3_2_3B_TOKENIZER,
+  LLAMA3_2_1B_TOKENIZER,
   LLAMA3_2_TOKENIZER_CONFIG,
 } from 'react-native-executorch';
 
@@ -193,7 +192,7 @@ const app = () => {
       // Instantiate and load the Large Language Model
       const llm = await new ExecuTorchLLM({
         modelSource: LLAMA3_2_1B_QLORA,
-        tokenizerSource: LLAMA3_2_3B_TOKENIZER,
+        tokenizerSource: LLAMA3_2_1B_TOKENIZER,
         tokenizerConfigSource: LLAMA3_2_TOKENIZER_CONFIG,
         responseCallback: setResponse,
       }).load();
