@@ -66,7 +66,7 @@ const App = () => {
 
 ### `ExecuTorchEmbeddings`
 
-Implements the `EmbeddingsInterface` from `react-native-rag`.
+Implements the `Embeddings` interface from `react-native-rag`.
 
 #### `constructor(params: ExecuTorchEmbeddingsParams)`
 
@@ -94,7 +94,7 @@ Initializes a new `ExecuTorchEmbeddings` instance.
 
 ### `ExecuTorchLLM`
 
-Implements the `LLMInterface` from `react-native-rag`.
+Implements the `LLM` interface from `react-native-rag`.
 
 #### `constructor(params: ExecuTorchLLMParams)`
 

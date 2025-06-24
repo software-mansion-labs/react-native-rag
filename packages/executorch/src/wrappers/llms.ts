@@ -1,5 +1,5 @@
 import { LLMModule, type ChatConfig } from 'react-native-executorch';
-import { LLM, type ResourceSource, type Message } from 'react-native-rag';
+import type { LLM, ResourceSource, Message } from 'react-native-rag';
 
 interface ExecuTorchLLMParams {
   modelSource: ResourceSource;
@@ -13,7 +13,7 @@ interface ExecuTorchLLMParams {
   chatConfig?: Partial<ChatConfig>;
 }
 
-export class ExecuTorchLLM implements LLM<ExecuTorchLLMParams> {
+export class ExecuTorchLLM implements LLM {
   private modelSource: ResourceSource;
   private tokenizerSource: ResourceSource;
   private tokenizerConfigSource: ResourceSource;

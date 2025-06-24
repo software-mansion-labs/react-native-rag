@@ -25,7 +25,7 @@ interface TextSplitterParams {
  * A text splitter that splits text based on a fixed character count.
  * This is a wrapper around Langchain's `CharacterTextSplitter`.
  */
-export class CharacterTextSplitter implements TextSplitter<TextSplitterParams> {
+export class CharacterTextSplitter implements TextSplitter {
   private textSplitter: LangchainCharacterTextSplitter;
 
   /**
@@ -56,9 +56,7 @@ export class CharacterTextSplitter implements TextSplitter<TextSplitterParams> {
  * recursively trying different separators.
  * This is a wrapper around Langchain's `RecursiveCharacterTextSplitter`.
  */
-export class RecursiveCharacterTextSplitter
-  implements TextSplitter<TextSplitterParams>
-{
+export class RecursiveCharacterTextSplitter implements TextSplitter {
   private textSplitter: LangchainRecursiveCharacterTextSplitter;
 
   /**
@@ -88,7 +86,7 @@ export class RecursiveCharacterTextSplitter
  * A text splitter that splits text based on a token count rather than character count.
  * This is a wrapper around Langchain's `TokenTextSplitter`.
  */
-export class TokenTextSplitter implements TextSplitter<TextSplitterParams> {
+export class TokenTextSplitter implements TextSplitter {
   private textSplitter: LangchainTokenTextSplitter;
 
   /**
@@ -119,7 +117,7 @@ export class TokenTextSplitter implements TextSplitter<TextSplitterParams> {
  * attempting to preserve Markdown structure within chunks.
  * This is a wrapper around Langchain's `MarkdownTextSplitter`.
  */
-export class MarkdownTextSplitter implements TextSplitter<TextSplitterParams> {
+export class MarkdownTextSplitter implements TextSplitter {
   private textSplitter: LangchainMarkdownTextSplitter;
 
   /**
@@ -150,7 +148,7 @@ export class MarkdownTextSplitter implements TextSplitter<TextSplitterParams> {
  * attempting to preserve LaTeX structure within chunks.
  * This is a wrapper around Langchain's `LatexTextSplitter`.
  */
-export class LatexTextSplitter implements TextSplitter<TextSplitterParams> {
+export class LatexTextSplitter implements TextSplitter {
   private textSplitter: LangchainLatexTextSplitter;
 
   /**

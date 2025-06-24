@@ -33,7 +33,7 @@ This configuration ensures that the necessary `libsql` and `sqliteVec` extension
 
 ## Usage
 
-To use `OPSQLiteVectorStore`, you need to instantiate it with an `EmbeddingsInterface` implementation. Here's how you can use it with the `useRAG` hook from `react-native-rag`:
+To use `OPSQLiteVectorStore`, you need to instantiate it with an `Embeddings` implementation. Here's how you can use it with the `useRAG` hook from `react-native-rag`:
 
 ```typescript
 import { useRAG } from 'react-native-rag';
@@ -62,7 +62,7 @@ const App = () => {
 Initializes a new instance of the vector store.
 
   * `params.name`: The name for the SQLite database file (e.g., `'my-vectors.db'`).
-  * `params.embeddings`: An instance of a class that implements the `EmbeddingsInterface`, used to convert documents into numerical vectors.
+  * `params.embeddings`: An instance of a class that implements the `Embeddings` interface, used to convert documents into numerical vectors.
 
 #### Methods
 

@@ -5,7 +5,7 @@
  * It provides core functionalities for managing documents (add, update, delete)
  * and performing similarity-based queries.
  */
-export interface VectorStoreInterface {
+export interface VectorStore {
   init: () => Promise<this>;
 
   /**
@@ -43,76 +43,6 @@ export interface VectorStoreInterface {
    * @returns An array of objects containing the ID, content, metadata, and similarity score for each result.
    */
   similaritySearch(
-    query: string,
-    k?: number
-  ): Promise<
-    {
-      id: string;
-      content: string;
-      metadata?: Record<string, any>;
-      similarity: number;
-    }[]
-  >;
-}
-
-/**
- * Abstract base class for all vector store implementations.
- * This class implements the VectorStoreInterface and provides a common
- * structure for managing vector databases. Concrete implementations
- * must define the specific logic for document management and similarity
- * search based on their `VectorStoreParams`.
- * @template VectorStoreParams The type of parameters required by the specific vector store.
- */
-export declare abstract class VectorStore<VectorStoreParams>
-  implements VectorStoreInterface
-{
-  constructor(params: VectorStoreParams);
-
-  /**
-   * Initializes the vector store, loading any necessary resources or establishing connections.
-   * This should be called before performing any other operations.
-   * @returns A promise that resolves to the instance of the VectorStore once initialized.
-   */
-  init: () => Promise<this>;
-
-  /**
-   * Adds a single document to the vector store.
-   * @param document The content of the document.
-   * @param metadata Optional metadata associated with the document.
-   * @returns The ID of the newly added document.
-   */
-  abstract add(
-    document: string,
-    metadata?: Record<string, any>
-  ): Promise<string>;
-
-  /**
-   * Updates a single document in the vector store by its ID.
-   * You must provide at least one of `document` or `metadata` to update.
-   * If `document` is provided, a new embedding will be generated.
-   * @param id The ID of the document to update.
-   * @param document Optional new content for the document.
-   * @param metadata Optional new metadata for the document.
-   */
-  abstract update(
-    id: string,
-    document?: string,
-    metadata?: Record<string, any>
-  ): Promise<void>;
-
-  /**
-   * Deletes a single document from the vector store by its ID.
-   * @param id The ID of the document to delete.
-   */
-  abstract delete(id: string): Promise<void>;
-
-  /**
-   * Performs a similarity search against the stored vectors.
-   * @param query The query string to search for.
-   * @param k The number of top similar results to return. Defaults to 3.
-   * @returns An array of objects containing the ID, content, metadata, and similarity score for each result.
-   */
-  abstract similaritySearch(
     query: string,
     k?: number
   ): Promise<

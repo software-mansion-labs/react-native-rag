@@ -1,17 +1,17 @@
 import { RecursiveCharacterTextSplitter } from '../text-splitters/langchain';
 import type { Message } from '../types/common';
-import type { LLMInterface } from '../interfaces/llm';
-import type { TextSplitterInterface } from '../interfaces/textSplitter';
-import type { VectorStoreInterface } from '../interfaces/vectorStore';
+import type { LLM } from '../interfaces/llm';
+import type { TextSplitter } from '../interfaces/textSplitter';
+import type { VectorStore } from '../interfaces/vectorStore';
 
 export interface RAGParams {
-  vectorStore: VectorStoreInterface;
-  llm: LLMInterface;
+  vectorStore: VectorStore;
+  llm: LLM;
 }
 
 export class RAG {
-  private vectorStore: VectorStoreInterface;
-  private llm: LLMInterface;
+  private vectorStore: VectorStore;
+  private llm: LLM;
 
   constructor({ vectorStore, llm }: RAGParams) {
     this.vectorStore = vectorStore;
@@ -34,7 +34,7 @@ export class RAG {
   async splitAddDocument(
     document: string,
     metadataGenerator?: (chunks: string[]) => Record<string, any>[],
-    textSplitter?: TextSplitterInterface
+    textSplitter?: TextSplitter
   ): Promise<string[]> {
     if (!textSplitter) {
       textSplitter = new RecursiveCharacterTextSplitter({

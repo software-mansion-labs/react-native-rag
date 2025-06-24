@@ -8,9 +8,7 @@ interface ExecuTorchEmbeddingsParams {
   onDownloadProgress?: (progress: number) => void;
 }
 
-export class ExecuTorchEmbeddings
-  implements Embeddings<ExecuTorchEmbeddingsParams>
-{
+export class ExecuTorchEmbeddings implements Embeddings {
   private modelSource: ResourceSource;
   private tokenizerSource: ResourceSource;
   private onDownloadProgress: (progress: number) => void;

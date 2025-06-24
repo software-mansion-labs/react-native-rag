@@ -6,32 +6,11 @@
  * (e.g., by character, word, or semantic boundaries) while aiming to
  * preserve context.
  */
-export interface TextSplitterInterface {
+export interface TextSplitter {
   /**
    * Splits a given text into an array of strings (chunks).
    * @param text The input text to be split.
    * @returns A promise that resolves to an array of string chunks.
    */
   splitText: (text: string) => Promise<string[]>;
-}
-
-/**
- * Abstract base class for all text splitter implementations.
- * This class implements the TextSplitterInterface and provides a common
- * structure for text splitting. Concrete implementations must define
- * the specific logic for how text is divided into chunks based on
- * their `TextSplitterParams`.
- * @template TextSplitterParams The type of parameters required by the specific text splitter.
- */
-export declare abstract class TextSplitter<TextSplitterParams>
-  implements TextSplitterInterface
-{
-  constructor(params: TextSplitterParams);
-
-  /**
-   * Splits a given text into an array of strings (chunks).
-   * @param text The input text to be split.
-   * @returns A promise that resolves to an array of string chunks.
-   */
-  abstract splitText: (text: string) => Promise<string[]>;
 }

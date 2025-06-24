@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { RAG, type RAGParams } from '../rag/rag';
 import type { Message } from '../types/common';
-import type { TextSplitterInterface } from '../interfaces/textSplitter';
+import type { TextSplitter } from '../interfaces/textSplitter';
 
 /**
  * Parameters for the useRAG hook.
@@ -115,7 +115,7 @@ export function useRAG({ vectorStore, llm, preventLoad }: UseRAGParams) {
    * Splits and adds a document to the vector store.
    * @param {string} document - Document content.
    * @param {(chunks: string[]) => Record<string, any>[]} [metadataGenerator] - Optional metadata generator.
-   * @param {TextSplitterInterface} [textSplitter] - Optional text splitter.
+   * @param {TextSplitter} [textSplitter] - Optional text splitter.
    * @returns {Promise<string[]>} IDs of added chunks.
    * @throws {Error} If not ready or busy storing.
    */
@@ -123,7 +123,7 @@ export function useRAG({ vectorStore, llm, preventLoad }: UseRAGParams) {
     async (
       document: string,
       metadataGenerator?: (chunks: string[]) => Record<string, any>[],
-      textSplitter?: TextSplitterInterface
+      textSplitter?: TextSplitter
     ): Promise<string[]> => {
       if (!isReady) throw new Error('RAG not ready.');
       if (isStoring) throw new Error('RAG busy storing.');

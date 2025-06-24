@@ -1,4 +1,4 @@
-import type { EmbeddingsInterface } from '../interfaces/embeddings';
+import type { Embeddings } from '../interfaces/embeddings';
 import type { VectorStore } from '../interfaces/vectorStore';
 import { uuidv4 } from '../utils/uuidv4';
 import { cosine } from '../utils/vectorMath';
@@ -11,11 +11,11 @@ interface MemoryVector {
 }
 
 interface MemoryVectorStoreParams {
-  embeddings: EmbeddingsInterface;
+  embeddings: Embeddings;
 }
 
-export class MemoryVectorStore implements VectorStore<MemoryVectorStoreParams> {
-  private embeddings: EmbeddingsInterface;
+export class MemoryVectorStore implements VectorStore {
+  private embeddings: Embeddings;
 
   private memoryVectors: Map<string, MemoryVector> = new Map();
 

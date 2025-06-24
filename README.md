@@ -224,8 +224,8 @@ A React hook for Retrieval Augmented Generation (RAG). Manages the RAG system li
 **Parameters:**
 
   * `params`: An object containing:
-      * `vectorStore`: An instance of a class that implements `VectorStoreInterface`.
-      * `llm`: An instance of a class that implements `LLMInterface`.
+      * `vectorStore`: An instance of a class that implements `VectorStore` interface.
+      * `llm`: An instance of a class that implements `LLM` interface.
       * `preventLoad` (optional): A boolean to defer loading the RAG system.
 
 **Returns:** An object with the following properties:
@@ -251,8 +251,8 @@ The core class for managing the RAG workflow.
 **`constructor(params: RAGParams)`**
 
   * `params`: An object containing:
-      * `vectorStore`: An instance that implements `VectorStoreInterface`.
-      * `llm`: An instance that implements `LLMInterface`.
+      * `vectorStore`: An instance that implements `VectorStore` interface.
+      * `llm`: An instance that implements `LLM` interface.
 
 **Methods:**
 
@@ -262,7 +262,7 @@ The core class for managing the RAG workflow.
       * `augmentedGeneration`: If `true` (default), retrieves context from the vector store to augment the prompt.
       * `options`: Includes `k` (number of documents to retrieve), `questionGenerator`, and `promptGenerator`.
       * `callback`: A function that receives tokens as they are generated.
-  * `async splitAddDocument(document: string, metadataGenerator?: (chunks: string[]) => Record<string, any>[], textSplitter?: TextSplitterInterface): Promise<string[]>`: Splits a document into chunks and adds them to the vector store.
+  * `async splitAddDocument(document: string, metadataGenerator?: (chunks: string[]) => Record<string, any>[], textSplitter?: TextSplitter): Promise<string[]>`: Splits a document into chunks and adds them to the vector store.
   * `async addDocument(document: string, metadata?: Record<string, any>): Promise<string>`: Adds a single document to the vector store.
   * `async updateDocument(id: string, document?: string, metadata?: Record<string, any>): Promise<void>`: Updates a document in the vector store.
   * `async deleteDocument(id: string): Promise<void>`: Deletes a document from the vector store.
@@ -270,9 +270,9 @@ The core class for managing the RAG workflow.
 
 #### `MemoryVectorStore`
 
-An in-memory implementation of the `VectorStoreInterface`. Useful for development and testing without persistent storage or when you don't need to save documents across app restarts.
+An in-memory implementation of the `VectorStore` interface. Useful for development and testing without persistent storage or when you don't need to save documents across app restarts.
 
-**`constructor(params: { embeddings: EmbeddingsInterface })`**
+**`constructor(params: { embeddings: Embeddings })`**
 
   * `params`: Requires an `embeddings` instance to generate vectors for documents.
 
@@ -280,20 +280,20 @@ An in-memory implementation of the `VectorStoreInterface`. Useful for developmen
 
 These interfaces define the contracts for creating your own custom components.
 
-#### `EmbeddingsInterface`
+#### `Embeddings`
 
   * `load: () => Promise<this>`: Loads the embedding model.
   * `delete: () => void`: Unloads the model.
   * `embed: (text: string) => Promise<number[]>`: Generates an embedding for a given text.
 
-#### `LLMInterface`
+#### `LLM`
 
   * `load: () => Promise<this>`: Loads the language model.
   * `interrupt: () => void`: Stops the current text generation.
   * `delete: () => void`: Unloads the model.
   * `generate: (messages: Message[], callback: (token: string) => void) => Promise<string>`: Generates a response from a list of messages, streaming tokens to the callback.
 
-#### `VectorStoreInterface`
+#### `VectorStore`
 
   * `init: () => Promise<this>`: Initializes the vector store.
   * `add(document: string, metadata?: Record<string, any>): Promise<string>`: Adds a document.
@@ -301,7 +301,7 @@ These interfaces define the contracts for creating your own custom components.
   * `delete(id: string): Promise<void>`: Deletes a document.
   * `similaritySearch(query: string, k?: number): Promise<{ id: string; content: string; ... }[]>`: Searches for `k` similar documents.
 
-#### `TextSplitterInterface`
+#### `TextSplitter`
 
   * `splitText: (text: string) => Promise<string[]>`: Splits text into an array of chunks.
 
@@ -327,13 +327,13 @@ The library provides wrappers around common `langchain` text splitters. All spli
 Bring your own models by creating classes that implement the `LLM`, `Embeddings`, `VectorStore` and `TextSplitter` interfaces. This allows you to use any model or service that fits your needs.
 
 ```typescript
-interface EmbeddingsInterface {
+interface Embeddings {
   load: () => Promise<this>;
   delete: () => void;
   embed: (text: string) => Promise<number[]>;
 }
 
-interface LLMInterface {
+interface LLM {
   load: () => Promise<this>;
   interrupt: () => void;
   delete: () => void;
@@ -343,11 +343,11 @@ interface LLMInterface {
   ) => Promise<string>;
 }
 
-interface TextSplitterInterface {
+interface TextSplitter {
   splitText: (text: string) => Promise<string[]>;
 }
 
-interface VectorStoreInterface {
+interface VectorStore {
   init: () => Promise<this>;
   add(document: string, metadata?: Record<string, any>): Promise<string>;
   update(

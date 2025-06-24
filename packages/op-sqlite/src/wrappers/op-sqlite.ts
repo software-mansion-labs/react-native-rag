@@ -1,20 +1,14 @@
-import {
-  type VectorStore,
-  type EmbeddingsInterface,
-  uuidv4,
-} from 'react-native-rag';
+import { type VectorStore, type Embeddings, uuidv4 } from 'react-native-rag';
 import { open, type DB } from '@op-engineering/op-sqlite';
 
 export interface OPSQLiteVectorStoreParams {
   name: string;
-  embeddings: EmbeddingsInterface;
+  embeddings: Embeddings;
 }
 
-export class OPSQLiteVectorStore
-  implements VectorStore<OPSQLiteVectorStoreParams>
-{
+export class OPSQLiteVectorStore implements VectorStore {
   private name: string;
-  private embeddings: EmbeddingsInterface;
+  private embeddings: Embeddings;
 
   db: DB;
 
