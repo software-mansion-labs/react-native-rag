@@ -1,6 +1,7 @@
 import type { Message } from 'react-native-rag';
 import { View, ScrollView, Text, StyleSheet } from 'react-native';
 import LlamaIcon from '../../assets/icons/llama_icon.svg';
+import { useRef } from 'react';
 
 interface MessagesListProps {
   messages: Message[];
@@ -13,8 +14,16 @@ export const MessagesList = ({
   response,
   isGenerating,
 }: MessagesListProps) => {
+  const scrollRef = useRef<ScrollView>(null);
+
   return (
-    <ScrollView style={messagesListStyles.container}>
+    <ScrollView
+      ref={scrollRef}
+      onContentSizeChange={() => {
+        scrollRef.current?.scrollToEnd({ animated: false });
+      }}
+      style={messagesListStyles.container}
+    >
       {messages.map((message, index) => (
         <View
           key={index}
