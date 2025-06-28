@@ -1,8 +1,8 @@
 import { type Message, MemoryVectorStore, useRAG } from 'react-native-rag';
 import {
-  LLAMA3_2_1B_QLORA,
-  LLAMA3_2_1B_TOKENIZER,
-  LLAMA3_2_TOKENIZER_CONFIG,
+  QWEN3_0_6B_QUANTIZED,
+  QWEN3_TOKENIZER,
+  QWEN3_TOKENIZER_CONFIG,
   ALL_MINILM_L6_V2,
   ALL_MINILM_L6_V2_TOKENIZER,
 } from 'react-native-executorch';
@@ -26,6 +26,7 @@ import { ChatInput } from './components/ChatInput';
 import { DocumentModal } from './components/DocumentModal';
 
 export default function App() {
+  const [downloadProgress, setDownloadProgress] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const [document, setDocument] = useState<string>('');
   const [ids, setIds] = useState<string[]>([]);
@@ -44,9 +45,10 @@ export default function App() {
 
   const llm = useMemo(() => {
     return new ExecuTorchLLM({
-      modelSource: LLAMA3_2_1B_QLORA,
-      tokenizerSource: LLAMA3_2_1B_TOKENIZER,
-      tokenizerConfigSource: LLAMA3_2_TOKENIZER_CONFIG,
+      modelSource: QWEN3_0_6B_QUANTIZED,
+      tokenizerSource: QWEN3_TOKENIZER,
+      tokenizerConfigSource: QWEN3_TOKENIZER_CONFIG,
+      onDownloadProgress: setDownloadProgress,
     });
   }, []);
 
@@ -130,6 +132,12 @@ export default function App() {
               response={rag.response}
               isGenerating={rag.isGenerating}
             />
+          ) : !rag.isReady ? (
+            <View style={appStyles.loadingContainer}>
+              <Text style={appStyles.loadingText}>
+                Loading {(downloadProgress * 100).toFixed(2)}%
+              </Text>
+            </View>
           ) : (
             <View style={appStyles.emptyStateContainer}>
               <Text style={appStyles.emptyStateTitle}>Hello! 👋</Text>
@@ -172,6 +180,15 @@ const appStyles = StyleSheet.create({
   },
   keyboardAvoidingView: {
     flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 20,
+    fontWeight: 'bold',
   },
   emptyStateContainer: {
     flex: 1,
