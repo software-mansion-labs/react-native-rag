@@ -8,6 +8,7 @@ interface ChatInputProps {
   onToggleAugmentedGeneration: () => void;
   onMessageSubmit: () => void;
   augmentedGeneration: boolean;
+  isReady: boolean;
   isGenerating: boolean;
 }
 
@@ -17,10 +18,11 @@ export const ChatInput = ({
   onAddDocument,
   onToggleAugmentedGeneration,
   onMessageSubmit,
+  isReady,
   isGenerating,
   augmentedGeneration,
 }: ChatInputProps) => {
-  const messageSubmitBtnDisabled = isGenerating || !message.trim();
+  const messageSubmitBtnDisabled = !isReady || isGenerating || !message.trim();
 
   return (
     <View style={chatInputStyles.container}>

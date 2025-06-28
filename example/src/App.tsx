@@ -154,6 +154,7 @@ export default function App() {
             onMessageSubmit={handleMessageSubmit}
             augmentedGeneration={augmentedGeneration}
             isGenerating={rag.isGenerating}
+            isReady={rag.isReady}
           />
         </KeyboardAvoidingView>
       </SafeAreaView>
