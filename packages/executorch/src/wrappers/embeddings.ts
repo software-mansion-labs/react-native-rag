@@ -34,8 +34,8 @@ export class ExecuTorchEmbeddings implements Embeddings {
     return this;
   }
 
-  delete() {
-    console.log('TextEmbeddingsModule does not support delete');
+  unload() {
+    console.log('TextEmbeddingsModule does not support unload');
   }
 
   async embed(text: string): Promise<number[]> {

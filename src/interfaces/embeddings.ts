@@ -15,10 +15,10 @@ export interface Embeddings {
   load: () => Promise<this>;
 
   /**
-   * Deletes or unloads the embedding model and its associated resources from memory.
+   * Unloads the embedding model and its associated resources from memory.
    * This is typically used to free up system resources when the model is no longer needed.
    */
-  delete: () => void;
+  unload: () => void;
 
   /**
    * Generates a numerical embedding (vector) for a given text string.

@@ -283,14 +283,14 @@ These interfaces define the contracts for creating your own custom components.
 #### `Embeddings`
 
   * `load: () => Promise<this>`: Loads the embedding model.
-  * `delete: () => void`: Unloads the model.
+  * `unload: () => void`: Unloads the model.
   * `embed: (text: string) => Promise<number[]>`: Generates an embedding for a given text.
 
 #### `LLM`
 
   * `load: () => Promise<this>`: Loads the language model.
   * `interrupt: () => void`: Stops the current text generation.
-  * `delete: () => void`: Unloads the model.
+  * `unload: () => void`: Unloads the model.
   * `generate: (messages: Message[], callback: (token: string) => void) => Promise<string>`: Generates a response from a list of messages, streaming tokens to the callback.
 
 #### `VectorStore`
@@ -329,14 +329,14 @@ Bring your own models by creating classes that implement the `LLM`, `Embeddings`
 ```typescript
 interface Embeddings {
   load: () => Promise<this>;
-  delete: () => void;
+  unload: () => void;
   embed: (text: string) => Promise<number[]>;
 }
 
 interface LLM {
   load: () => Promise<this>;
   interrupt: () => void;
-  delete: () => void;
+  unload: () => void;
   generate: (
     messages: Message[],
     callback: (token: string) => void

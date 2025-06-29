@@ -21,10 +21,10 @@ export interface LLM {
   interrupt: () => void;
 
   /**
-   * Deletes or unloads the LLM model and its associated resources from memory.
+   * Unloads the LLM and its associated resources from memory.
    * This is typically used to free up system resources when the model is no longer needed.
    */
-  delete: () => void;
+  unload: () => void;
 
   /**
    * Generates a text response based on a sequence of messages.

@@ -88,7 +88,7 @@ Initializes a new `ExecuTorchEmbeddings` instance.
 
       * **Returns**: A `Promise` that resolves to an array of numbers, representing the document's vector.
 
-  * #### `delete(): void`
+  * #### `unload(): void`
 
     A placeholder method, as the underlying native module (`TextEmbeddingsModule`) does not currently support manually unloading the model from memory.
 
@@ -125,6 +125,6 @@ Initializes a new `ExecuTorchLLM` instance.
 
     Immediately stops any ongoing text generation. This is useful for allowing users to halt a response before it's finished.
 
-  * #### `delete(): void`
+  * #### `unload(): void`
 
     Unloads the model and its assets from memory, freeing up resources. Call this when you are done with the LLM instance to conserve memory.

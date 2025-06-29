@@ -60,7 +60,7 @@ export class ExecuTorchLLM implements LLM {
     LLMModule.interrupt();
   }
 
-  delete() {
+  unload() {
     LLMModule.delete();
   }
 
