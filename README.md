@@ -182,7 +182,7 @@ const app = () => {
   useEffect(() => {
     const initializeRAG = async () => {
       // Instantiate and load the Embeddings Model
-      // NOTICE: Calling init on VectorStore will automatically load the embeddings model
+      // NOTE: Calling load on VectorStore will automatically load the embeddings model
       // so loading the embeddings model separately is not necessary in this case.
       const embeddings = await new ExecuTorchEmbeddings({
         modelSource: ALL_MINILM_L6_V2,
@@ -198,7 +198,7 @@ const app = () => {
       }).load();
 
       // Instantiate and initialize the Vector Store
-      const vectorStore = await new MemoryVectorStore({ embeddings }).init();
+      const vectorStore = await new MemoryVectorStore({ embeddings }).load();
 
       setEmbeddings(embeddings);
       setLLM(llm);
@@ -219,7 +219,7 @@ const app = () => {
 
 #### `useRAG(params: UseRAGParams)`
 
-A React hook for Retrieval Augmented Generation (RAG). Manages the RAG system lifecycle, loading, generation, and document storage.
+A React hook for Retrieval Augmented Generation (RAG). Manages the RAG system lifecycle, loading, unloading, generation, and document storage.
 
 **Parameters:**
 
@@ -236,7 +236,7 @@ A React hook for Retrieval Augmented Generation (RAG). Manages the RAG system li
   * `isStoring` (`boolean`): True if a document operation (add, update, delete) is in progress.
   * `error` (`string | null`): The last error message, if any.
   * `generate`: A function to generate text. See `RAG.generate()` for details.
-  * `interrupt`: A function to stop the current generation.
+  * `interrupt`: A function to stop the current generation. See `RAG.interrupt()` for details.
   * `splitAddDocument`: A function to split and add a document. See `RAG.splitAddDocument()` for details.
   * `addDocument`: Adds a document. See `RAG.addDocument()` for details.
   * `updateDocument`: Updates a document. See `RAG.updateDocument()` for details.
@@ -257,6 +257,7 @@ The core class for managing the RAG workflow.
 **Methods:**
 
   * `async load(): Promise<this>`: Initializes the vector store and loads the LLM.
+  * `async unload(): Promise<void>`: Unloads the vector store and LLM.
   * `async generate(input: Message[] | string, augmentedGeneration?: boolean, options?: object, callback?: (token: string) => void): Promise<string>`: Generates a response.
       * `input`: A string or an array of `Message` objects.
       * `augmentedGeneration`: If `true` (default), retrieves context from the vector store to augment the prompt.
@@ -266,7 +267,7 @@ The core class for managing the RAG workflow.
   * `async addDocument(document: string, metadata?: Record<string, any>): Promise<string>`: Adds a single document to the vector store.
   * `async updateDocument(id: string, document?: string, metadata?: Record<string, any>): Promise<void>`: Updates a document in the vector store.
   * `async deleteDocument(id: string): Promise<void>`: Deletes a document from the vector store.
-  * `interrupt(): void`: Interrupts the ongoing LLM generation.
+  * `async interrupt(): Promise<void>`: Interrupts the ongoing LLM generation.
 
 #### `MemoryVectorStore`
 
@@ -276,6 +277,10 @@ An in-memory implementation of the `VectorStore` interface. Useful for developme
 
   * `params`: Requires an `embeddings` instance to generate vectors for documents.
 
+* `async load(): Promise<this>`: Loads the Embeddings model.
+
+* `async unload(): Promise<void>`: Unloads the Embeddings model.
+
 ### Interfaces (for Custom Components)
 
 These interfaces define the contracts for creating your own custom components.
@@ -283,19 +288,20 @@ These interfaces define the contracts for creating your own custom components.
 #### `Embeddings`
 
   * `load: () => Promise<this>`: Loads the embedding model.
-  * `unload: () => void`: Unloads the model.
+  * `unload: () => Promise<void>`: Unloads the model.
   * `embed: (text: string) => Promise<number[]>`: Generates an embedding for a given text.
 
 #### `LLM`
 
   * `load: () => Promise<this>`: Loads the language model.
-  * `interrupt: () => void`: Stops the current text generation.
-  * `unload: () => void`: Unloads the model.
+  * `interrupt: () => Promise<void>`: Stops the current text generation.
+  * `unload: () => Promise<void>`: Unloads the model.
   * `generate: (messages: Message[], callback: (token: string) => void) => Promise<string>`: Generates a response from a list of messages, streaming tokens to the callback.
 
 #### `VectorStore`
 
-  * `init: () => Promise<this>`: Initializes the vector store.
+  * `load: () => Promise<this>`: Initializes the vector store.
+  * `unload: () => Promise<void>`: Unloads the vector store and releases resources.
   * `add(document: string, metadata?: Record<string, any>): Promise<string>`: Adds a document.
   * `update(id: string, document?: string, metadata?: Record<string, any>): Promise<void>`: Updates a document.
   * `delete(id: string): Promise<void>`: Deletes a document.
@@ -329,14 +335,14 @@ Bring your own models by creating classes that implement the `LLM`, `Embeddings`
 ```typescript
 interface Embeddings {
   load: () => Promise<this>;
-  unload: () => void;
+  unload: () => Promise<void>;
   embed: (text: string) => Promise<number[]>;
 }
 
 interface LLM {
   load: () => Promise<this>;
-  interrupt: () => void;
-  unload: () => void;
+  interrupt: () => Promise<void>;
+  unload: () => Promise<void>;
   generate: (
     messages: Message[],
     callback: (token: string) => void
@@ -348,7 +354,8 @@ interface TextSplitter {
 }
 
 interface VectorStore {
-  init: () => Promise<this>;
+  load: () => Promise<this>;
+  unload: () => Promise<void>;
   add(document: string, metadata?: Record<string, any>): Promise<string>;
   update(
     id: string,

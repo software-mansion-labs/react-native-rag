@@ -17,8 +17,9 @@ export interface Embeddings {
   /**
    * Unloads the embedding model and its associated resources from memory.
    * This is typically used to free up system resources when the model is no longer needed.
+   * @returns A promise that resolves once the model unloading is complete.
    */
-  unload: () => void;
+  unload: () => Promise<void>;
 
   /**
    * Generates a numerical embedding (vector) for a given text string.

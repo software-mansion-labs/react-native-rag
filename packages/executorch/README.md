@@ -88,9 +88,9 @@ Initializes a new `ExecuTorchEmbeddings` instance.
 
       * **Returns**: A `Promise` that resolves to an array of numbers, representing the document's vector.
 
-  * #### `unload(): void`
+  * #### `unload(): Promise<void>`
 
-    A placeholder method, as the underlying native module (`TextEmbeddingsModule`) does not currently support manually unloading the model from memory.
+    Placeholder method. React Native ExecuTorch `TextEmbeddingsModule` does not currently support manually unloading the model from memory, but this method is provided for API consistency.
 
 ### `ExecuTorchLLM`
 
@@ -121,10 +121,10 @@ Initializes a new `ExecuTorchLLM` instance.
       * `callback`: A function that is called in real-time with each newly generated token, allowing for a streaming response effect.
       * **Returns**: A `Promise` that resolves with the final, complete response string from the model.
 
-  * #### `interrupt(): void`
+  * #### `interrupt(): Promise<void>`
 
-    Immediately stops any ongoing text generation. This is useful for allowing users to halt a response before it's finished.
+    Interrupts any ongoing text generation process. Awaiting this method will resolve immediately, as the underlying React Native ExecuTorch does not currently support async interrupt operation. This is provided for API consistency
 
-  * #### `unload(): void`
+  * #### `unload(): Promise<void>`
 
-    Unloads the model and its assets from memory, freeing up resources. Call this when you are done with the LLM instance to conserve memory.
+    Unloads the model and its assets from memory, freeing up resources. Call this when you are done with the LLM instance to conserve memory. Awaiting this method will resolve immediately, as the underlying React Native ExecuTorch does not currently support async unload operation. This is provided for API consistency.

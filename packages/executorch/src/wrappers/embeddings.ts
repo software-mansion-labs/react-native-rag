@@ -34,8 +34,10 @@ export class ExecuTorchEmbeddings implements Embeddings {
     return this;
   }
 
-  unload() {
-    console.log('TextEmbeddingsModule does not support unload');
+  async unload() {
+    console.log(
+      'React Native ExecuTorch TextEmbeddingsModule does not support unload'
+    );
   }
 
   async embed(text: string): Promise<number[]> {

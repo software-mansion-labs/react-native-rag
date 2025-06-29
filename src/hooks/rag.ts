@@ -16,7 +16,7 @@ interface UseRAGParams extends RAGParams {
 
 /**
  * A React hook for Retrieval Augmented Generation (RAG).
- * Manages RAG system lifecycle, loading, generation, and document storage.
+ * Manages RAG system lifecycle, loading, unloading, generation, and document storage.
  *
  * @param {UseRAGParams} params - RAG configuration (vectorStore, llm, preventLoad).
  * @returns {object} RAG state and functions.
@@ -43,18 +43,34 @@ export function useRAG({ vectorStore, llm, preventLoad }: UseRAGParams) {
 
   useEffect(() => {
     setError(null);
-    if (!preventLoad) {
-      const load = async () => {
-        try {
-          await rag.load();
-          setIsReady(true);
-        } catch (e) {
-          setError(e instanceof Error ? e.message : 'RAG init error.');
-        }
-      };
-      load();
-    }
-  }, [rag, preventLoad]);
+
+    if (preventLoad) return;
+
+    const load = async () => {
+      try {
+        await rag.load();
+        setIsReady(true);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'RAG load error.');
+      }
+    };
+    load();
+
+    const unload = async () => {
+      try {
+        await rag.unload();
+        setIsReady(false);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'RAG unload error.');
+      }
+    };
+
+    return () => {
+      if (isReady) {
+        unload();
+      }
+    };
+  }, [rag, preventLoad, isReady]);
 
   /**
    * Generates a text response.
@@ -104,11 +120,12 @@ export function useRAG({ vectorStore, llm, preventLoad }: UseRAGParams) {
   /**
    * Interrupts ongoing text generation.
    * @throws {Error} If not ready or not generating.
+   * @returns A promise that resolves when the interruption is complete.
    */
-  const interrupt = useCallback((): void => {
+  const interrupt = useCallback(async (): Promise<void> => {
     if (!isReady) throw new Error('RAG not ready.');
     if (!isGenerating) throw new Error('RAG not generating.');
-    rag.interrupt();
+    return rag.interrupt();
   }, [rag, isGenerating, isReady]);
 
   /**

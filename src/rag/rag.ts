@@ -18,10 +18,23 @@ export class RAG {
     this.llm = llm;
   }
 
+  /**
+   * Initializes the RAG system by loading the vector store and LLM.
+   * @returns A promise that resolves to the RAG instance.
+   */
   async load(): Promise<this> {
-    await this.vectorStore.init();
+    await this.vectorStore.load();
     await this.llm.load();
     return this;
+  }
+
+  /**
+   * Unloads the RAG system, releasing resources used by the vector store and LLM.
+   * @returns A promise that resolves when the RAG system is unloaded.
+   */
+  async unload(): Promise<void> {
+    await this.vectorStore.unload();
+    await this.llm.unload();
   }
 
   /**
@@ -106,6 +119,19 @@ export class RAG {
 Context: ${retrievedDocs.map((doc) => doc.content).join('\n')}`;
   }
 
+  /**
+   * Generates a response based on the input messages and retrieved documents.
+   * If `augmentedGeneration` is true, it retrieves relevant documents from the vector store
+   * and includes them in the prompt for the LLM.
+   * @param input The input messages or a single string message.
+   * @param augmentedGeneration Whether to use augmented generation with retrieved documents.
+   * @param options Optional parameters for generation:
+   * - `k`: Number of documents to retrieve (default: 3).
+   * - `questionGenerator`: Function to generate the question from messages for the document retrieval step. (default: uses last user message).
+   * - `promptGenerator`: Function to generate the prompt from messages and retrieved documents (default: uses last user message and retrieved docs).
+   * @param callback Optional callback function to handle token generation.
+   * @returns A promise that resolves to the generated response string.
+   */
   public async generate(
     input: Message[] | string,
     augmentedGeneration: boolean = true,
@@ -149,7 +175,11 @@ Context: ${retrievedDocs.map((doc) => doc.content).join('\n')}`;
     return this.llm.generate(augmentedInput, callback);
   }
 
-  interrupt() {
-    this.llm.interrupt();
+  /**
+   * Interrupts the ongoing text generation process.
+   * @returns A promise that resolves when the interruption is complete.
+   */
+  async interrupt(): Promise<void> {
+    return this.llm.interrupt();
   }
 }

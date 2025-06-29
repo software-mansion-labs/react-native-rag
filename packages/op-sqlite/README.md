@@ -68,9 +68,13 @@ Initializes a new instance of the vector store.
 
 The `OPSQLiteVectorStore` class implements the `VectorStore` interface from `react-native-rag`.
 
-  * #### `init(): Promise<this>`
+  * #### `load(): Promise<this>`
 
     Initializes the vector store by preparing the database. It creates the necessary `vectors` table with a specialized index for efficient similarity searching. This asynchronous method should be called once before performing any other operations.
+
+  * #### `unload(): Promise<void>`
+
+    Releases any resources used by the vector store. This will call `unload` on the associated `Embeddings` instance and close the SQLite database connection. Use this to free resources when the vector store is no longer needed.
 
   * #### `add(document: string, metadata?: object): Promise<string>`
 

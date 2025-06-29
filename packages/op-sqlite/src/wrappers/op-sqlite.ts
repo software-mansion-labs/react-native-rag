@@ -20,7 +20,7 @@ export class OPSQLiteVectorStore implements VectorStore {
     });
   }
 
-  async init() {
+  async load() {
     await this.embeddings.load();
     const embedding_dim = (await this.embeddings.embed('dummy')).length;
     await this.db.execute(`
@@ -36,6 +36,11 @@ export class OPSQLiteVectorStore implements VectorStore {
       );
     `);
     return this;
+  }
+
+  async unload() {
+    await this.embeddings.unload();
+    await this.db.close();
   }
 
   async add(document: string, metadata?: Record<string, any>) {

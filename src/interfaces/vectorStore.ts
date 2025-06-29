@@ -6,7 +6,17 @@
  * and performing similarity-based queries.
  */
 export interface VectorStore {
-  init: () => Promise<this>;
+  /**
+   * Initializes the vector store, loading necessary resources.
+   * @returns A promise that resolves to the initialized vector store instance.
+   */
+  load: () => Promise<this>;
+
+  /**
+   * Unloads the vector store, releasing any resources used.
+   * @returns A promise that resolves when the vector store is unloaded.
+   */
+  unload: () => Promise<void>;
 
   /**
    * Adds a single document to the vector store.

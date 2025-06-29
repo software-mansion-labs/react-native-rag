@@ -23,9 +23,13 @@ export class MemoryVectorStore implements VectorStore {
     this.embeddings = embeddings;
   }
 
-  async init(): Promise<this> {
+  async load(): Promise<this> {
     await this.embeddings.load();
     return this;
+  }
+
+  async unload(): Promise<void> {
+    await this.embeddings.unload();
   }
 
   async add(document: string, metadata?: Record<string, any>): Promise<string> {

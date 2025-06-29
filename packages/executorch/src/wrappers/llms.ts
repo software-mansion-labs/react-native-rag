@@ -56,11 +56,17 @@ export class ExecuTorchLLM implements LLM {
     return this;
   }
 
-  interrupt() {
+  async interrupt() {
+    console.warn(
+      'This function will call a synchronous interrupt on the LLMModule from React Native ExecuTorch. Awaiting this method will not guarantee completion. This may change in future versions to support async interrupt.'
+    );
     LLMModule.interrupt();
   }
 
-  unload() {
+  async unload() {
+    console.warn(
+      'This function will call a synchronous unload on the LLMModule from React Native ExecuTorch. Awaiting this method will not guarantee completion. This may change in future versions to support async unload.'
+    );
     LLMModule.delete();
   }
 

@@ -17,14 +17,16 @@ export interface LLM {
   /**
    * Interrupts any ongoing text generation process.
    * This can be useful for stopping long-running generations prematurely.
+   * @returns A promise that resolves once the interruption is complete.
    */
-  interrupt: () => void;
+  interrupt: () => Promise<void>;
 
   /**
    * Unloads the LLM and its associated resources from memory.
    * This is typically used to free up system resources when the model is no longer needed.
+   * @returns A promise that resolves once the model unloading is complete.
    */
-  unload: () => void;
+  unload: () => Promise<void>;
 
   /**
    * Generates a text response based on a sequence of messages.
