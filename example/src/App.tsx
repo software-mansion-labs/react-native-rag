@@ -96,10 +96,9 @@ export default function App() {
     setMessage('');
 
     try {
-      const result = await rag.generate(
-        [...messages, newMessage],
-        augmentedGeneration
-      );
+      const result = await rag.generate([...messages, newMessage], {
+        augmentedGeneration,
+      });
       setMessages((prevMessages) => [
         ...prevMessages,
         { role: 'assistant', content: result },

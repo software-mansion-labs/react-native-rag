@@ -75,16 +75,15 @@ export function useRAG({ vectorStore, llm, preventLoad }: UseRAGParams) {
   /**
    * Generates a text response.
    * @param {Message[] | string} input - Input messages or query.
-   * @param {boolean} [augmentedGeneration=true] - Use RAG augmentation.
-   * @param {object} [options={}] - Generation options (k, questionGenerator, promptGenerator).
+   * @param {object} [options={}] - Generation options (augmentedGeneration, k, questionGenerator, promptGenerator).
    * @returns {Promise<string>} Complete generated string.
    * @throws {Error} If not ready or busy.
    */
   const generate = useCallback(
     async (
       input: Message[] | string,
-      augmentedGeneration = true,
       options: {
+        augmentedGeneration?: boolean;
         k?: number;
         questionGenerator?: (messages: Message[]) => string;
         promptGenerator?: (
@@ -99,14 +98,12 @@ export function useRAG({ vectorStore, llm, preventLoad }: UseRAGParams) {
       setError(null);
       try {
         setIsGenerating(true);
-        return await rag.generate(
-          input,
-          augmentedGeneration,
-          options,
-          (token: string) => {
+        return await rag.generate(input, {
+          ...options,
+          callback: (token: string) => {
             setResponse((prev) => prev + token);
-          }
-        );
+          },
+        });
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Generation error.');
         throw e;

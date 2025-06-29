@@ -124,26 +124,26 @@ Context: ${retrievedDocs.map((doc) => doc.content).join('\n')}`;
    * If `augmentedGeneration` is true, it retrieves relevant documents from the vector store
    * and includes them in the prompt for the LLM.
    * @param input The input messages or a single string message.
-   * @param augmentedGeneration Whether to use augmented generation with retrieved documents.
    * @param options Optional parameters for generation:
+   * - `augmentedGeneration`: Whether to use augmented generation with retrieved documents (default: true).
    * - `k`: Number of documents to retrieve (default: 3).
    * - `questionGenerator`: Function to generate the question from messages for the document retrieval step. (default: uses last user message).
    * - `promptGenerator`: Function to generate the prompt from messages and retrieved documents (default: uses last user message and retrieved docs).
-   * @param callback Optional callback function to handle token generation.
+   * - `callback`: Optional callback function to handle token generation.
    * @returns A promise that resolves to the generated response string.
    */
   public async generate(
     input: Message[] | string,
-    augmentedGeneration: boolean = true,
     options: {
+      augmentedGeneration?: boolean;
       k?: number;
       questionGenerator?: (messages: Message[]) => string;
       promptGenerator?: (
         messages: Message[],
         retrievedDocs: { content: string }[]
       ) => string;
-    } = {},
-    callback: (token: string) => void = () => {}
+      callback?: (token: string) => void;
+    } = {}
   ): Promise<string> {
     if (typeof input === 'string') {
       input = [{ role: 'user', content: input }];
@@ -151,14 +151,19 @@ Context: ${retrievedDocs.map((doc) => doc.content).join('\n')}`;
     if (!input.length) {
       throw new Error('No messages provided');
     }
-    if (!augmentedGeneration) {
-      return this.llm.generate(input, callback);
-    }
+
     const {
+      augmentedGeneration = true,
       k = 3,
       questionGenerator = this.questionGenerator,
       promptGenerator = this.promptGenerator,
+      callback = () => {},
     } = options;
+
+    if (!augmentedGeneration) {
+      return this.llm.generate(input, callback);
+    }
+
     const lastMessage = input[input.length - 1];
     if (!lastMessage?.content) {
       throw new Error('Last message has no content');

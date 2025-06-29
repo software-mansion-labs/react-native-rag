@@ -258,11 +258,14 @@ The core class for managing the RAG workflow.
 
   * `async load(): Promise<this>`: Initializes the vector store and loads the LLM.
   * `async unload(): Promise<void>`: Unloads the vector store and LLM.
-  * `async generate(input: Message[] | string, augmentedGeneration?: boolean, options?: object, callback?: (token: string) => void): Promise<string>`: Generates a response.
-      * `input`: A string or an array of `Message` objects.
-      * `augmentedGeneration`: If `true` (default), retrieves context from the vector store to augment the prompt.
-      * `options`: Includes `k` (number of documents to retrieve), `questionGenerator`, and `promptGenerator`.
-      * `callback`: A function that receives tokens as they are generated.
+  * `async generate(input: Message[] | string, options?: { augmentedGeneration?: boolean; k?: number; questionGenerator?: Function; promptGenerator?: Function; callback?: (token: string) => void }): Promise<string>` Generates a response.
+    * `input` (`Message[] | string`): A string or an array of `Message` objects.
+    * `options` (object, optional): Generation options.
+      * `augmentedGeneration` (`boolean`, optional): If `true` (default), retrieves context from the vector store to augment the prompt.
+      * `k` (`number`, optional): Number of documents to retrieve (default: `3`).
+      * `questionGenerator` (`function`, optional): Custom question generator.
+      * `promptGenerator` (`function`, optional): Custom prompt generator.
+      * `callback` (`function`, optional): A function that receives tokens as they are generated.
   * `async splitAddDocument(document: string, metadataGenerator?: (chunks: string[]) => Record<string, any>[], textSplitter?: TextSplitter): Promise<string[]>`: Splits a document into chunks and adds them to the vector store.
   * `async addDocument(document: string, metadata?: Record<string, any>): Promise<string>`: Adds a single document to the vector store.
   * `async updateDocument(id: string, document?: string, metadata?: Record<string, any>): Promise<void>`: Updates a document in the vector store.
