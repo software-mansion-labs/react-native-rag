@@ -1,7 +1,7 @@
 {
   "name": "react-native-rag",
-  "version": "0.0.3",
-  "description": "React Native RAG",
+  "version": "0.0.4",
+  "description": "Private, local RAGs. Supercharge LLMs with your own knowledge base.",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
   "exports": {
@@ -43,18 +43,21 @@
   "keywords": [
     "react-native",
     "ios",
-    "android"
+    "android",
+    "ai",
+    "llm",
+    "rag"
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jakmro/react-native-rag.git"
+    "url": "git+https://github.com/software-mansion-labs/react-native-rag.git"
   },
   "author": "jakmro <jakub.mroz@swmansion.com> (https://github.com/jakmro)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jakmro/react-native-rag/issues"
+    "url": "https://github.com/software-mansion-labs/react-native-rag/issues"
   },
-  "homepage": "https://github.com/jakmro/react-native-rag#readme",
+  "homepage": "https://github.com/software-mansion-labs/react-native-rag#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },

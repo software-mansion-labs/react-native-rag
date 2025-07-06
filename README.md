@@ -1,11 +1,12 @@
 # React Native RAG
 
-Small and extensible library for creating RAG workflows.
+Private, local RAGs. Supercharge LLMs with your own knowledge base.
 
 ## Navigation
 
   - [🚀 Features](#-features)
   - [📥 Installation](#-installation)
+  - [📱 Quickstart - Example App](#-quickstart---example-app)
   - [📚 Usage](#-usage)
       - [Using the `useRAG` Hook](#1-using-the-userag-hook)
       - [Using the `RAG` Class](#2-using-the-rag-class)
@@ -17,7 +18,6 @@ Small and extensible library for creating RAG workflows.
       - [Text Splitters](#text-splitters)
       - [Utilities](#utilities)
   - [🧩 Using Custom Models](#-using-custom-models)
-  - [📱 Example App](#-example-app)
   - [📦 Packages](#-packages)
   - [🤝 Contributing](#-contributing)
   - [📄 License](#-license)
@@ -44,6 +44,10 @@ npm install @react-native-rag/executorch react-native-executorch
 ```
 
 For persisting vector stores, you can use [`@react-native-rag/op-sqlite`](packages/op-sqlite/README.md):
+
+## 📱 Quickstart - Example App
+
+For a complete example app that demonstrates how to use the library, check out the [example app](example).
 
 ## 📚 Usage
 
@@ -380,10 +384,6 @@ interface VectorStore {
 }
 ```
 
-## 📱 Example App
-
-For a complete example app that demonstrates how to use the library, check out the [example app](example).
-
 ## 📦 Packages
 
   * [`@react-native-rag/executorch`](packages/executorch/README.md): On-device inference with `react-native-executorch`.
@@ -396,3 +396,9 @@ Contributions are welcome! See the [contributing guide](CONTRIBUTING.md) to lear
 ## 📄 License
 
 MIT
+
+## React Native RAG is created by Software Mansion
+
+Since 2012 [Software Mansion](https://swmansion.com) is a software agency with experience in building web and mobile apps. We are Core React Native Contributors and experts in dealing with all kinds of React Native issues. We can help you build your next dream product – [Hire us](https://swmansion.com/contact/projects?utm_source=react-native-rag&utm_medium=readme).
+
+[![swm](https://logo.swmansion.com/logo?color=white&variant=desktop&width=150&tag=react-native-rag-github 'Software Mansion')](https://swmansion.com)

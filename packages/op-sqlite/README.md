@@ -105,3 +105,9 @@ The `OPSQLiteVectorStore` class implements the `VectorStore` interface from `rea
   * #### `deleteVectorStore(): Promise<void>`
 
     A utility method to completely delete the vector table from the database. This will erase all stored documents and embeddings. Use with caution.
+
+## React Native RAG is created by Software Mansion
+
+Since 2012 [Software Mansion](https://swmansion.com) is a software agency with experience in building web and mobile apps. We are Core React Native Contributors and experts in dealing with all kinds of React Native issues. We can help you build your next dream product – [Hire us](https://swmansion.com/contact/projects?utm_source=react-native-rag&utm_medium=readme).
+
+[![swm](https://logo.swmansion.com/logo?color=white&variant=desktop&width=150&tag=react-native-rag-github 'Software Mansion')](https://swmansion.com)

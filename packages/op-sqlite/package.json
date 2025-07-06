@@ -1,16 +1,15 @@
 {
   "name": "@react-native-rag/op-sqlite",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "main": "src/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "license": "MIT",
+  "description": "OP-SQLite wrapper for React Native RAG",
   "peerDependencies": {
     "@op-engineering/op-sqlite": "^14.0.4",
-    "react-native-rag": "^0.0.1"
+    "react-native-rag": "^0.0.4"
   },
   "devDependencies": {
     "@op-engineering/op-sqlite": "^14.0.4",
