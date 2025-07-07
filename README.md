@@ -1,5 +1,8 @@
 # React Native RAG
 
+![header](https://github.com/user-attachments/assets/dc07a506-0248-4115-9371-e0d10e6c8792)
+
+
 Private, local RAGs. Supercharge LLMs with your own knowledge base.
 
 ## Navigation
