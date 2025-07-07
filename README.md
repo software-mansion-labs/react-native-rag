@@ -8,7 +8,7 @@ Private, local RAGs. Supercharge LLMs with your own knowledge base.
 ## Navigation
 
   - [🚀 Features](#-features)
-  - [📥 Installation](#-installation)
+  - [📦 Installation](#-installation)
   - [📱 Quickstart - Example App](#-quickstart---example-app)
   - [📚 Usage](#-usage)
       - [Using the `useRAG` Hook](#1-using-the-userag-hook)
@@ -21,7 +21,7 @@ Private, local RAGs. Supercharge LLMs with your own knowledge base.
       - [Text Splitters](#text-splitters)
       - [Utilities](#utilities)
   - [🧩 Using Custom Models](#-using-custom-models)
-  - [📦 Packages](#-packages)
+  - [🔌 Plugins](#-plugins)
   - [🤝 Contributing](#-contributing)
   - [📄 License](#-license)
 
@@ -34,7 +34,7 @@ Private, local RAGs. Supercharge LLMs with your own knowledge base.
   * **Vector Store Persistence**: Includes support for SQLite with `@react-native-rag/op-sqlite` to save and manage vector stores locally.
   * **Semantic Search Ready**: Easily implement powerful semantic search in your app by using the `VectorStore` and `Embeddings` components directly.
 
-## 📥 Installation
+## 📦 Installation
 
 ```sh
 npm install react-native-rag
@@ -387,7 +387,7 @@ interface VectorStore {
 }
 ```
 
-## 📦 Packages
+## 🔌 Plugins
 
   * [`@react-native-rag/executorch`](packages/executorch/README.md): On-device inference with `react-native-executorch`.
   * [`@react-native-rag/op-sqlite`](packages/op-sqlite/README.md): Persisting vector stores using SQLite.
