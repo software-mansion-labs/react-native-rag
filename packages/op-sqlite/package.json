@@ -1,6 +1,6 @@
 {
   "name": "@react-native-rag/op-sqlite",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "main": "src/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,7 +9,7 @@
   "description": "OP-SQLite wrapper for React Native RAG",
   "peerDependencies": {
     "@op-engineering/op-sqlite": "^14.0.4",
-    "react-native-rag": "^0.0.4"
+    "react-native-rag": "^0.1.0"
   },
   "devDependencies": {
     "@op-engineering/op-sqlite": "^14.0.4",
