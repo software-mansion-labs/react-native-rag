@@ -20,7 +20,7 @@ Private, local RAGs. Supercharge LLMs with your own knowledge base.
       - [Interfaces (for Custom Components)](#interfaces-for-custom-components)
       - [Text Splitters](#text-splitters)
       - [Utilities](#utilities)
-  - [🧩 Using Custom Models](#-using-custom-models)
+  - [🧩 Using Custom Components](#-using-custom-components)
   - [🔌 Plugins](#-plugins)
   - [🤝 Contributing](#-contributing)
   - [📄 License](#-license)
@@ -338,9 +338,9 @@ The library provides wrappers around common `langchain` text splitters. All spli
   * `dotProduct(a: number[], b: number[]): number`: Calculates the dot product of two vectors.
   * `magnitude(a: number[]): number`: Calculates the Euclidean magnitude of a vector.
 
-## 🧩 Using Custom Models
+## 🧩 Using Custom Components
 
-Bring your own models by creating classes that implement the `LLM`, `Embeddings`, `VectorStore` and `TextSplitter` interfaces. This allows you to use any model or service that fits your needs.
+Bring your own components by creating classes that implement the `LLM`, `Embeddings`, `VectorStore` and `TextSplitter` interfaces. This allows you to use any model or service that fits your needs.
 
 ```typescript
 interface Embeddings {
