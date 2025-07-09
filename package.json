@@ -1,6 +1,6 @@
 {
   "name": "react-native-rag",
-  "version": "0.0.3",
+  "version": "0.0.3-alpha1",
   "description": "React Native RAG",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",

@@ -8,7 +8,7 @@ import {
 } from 'react-native-executorch';
 import { useMemo, useState } from 'react';
 import {
-  ExecuTorchEmbeddings,
+  ExecuTorchTextEmbeddings,
   ExecuTorchLLM,
 } from '@react-native-rag/executorch';
 import {
@@ -36,7 +36,7 @@ export default function App() {
 
   const vectorStore = useMemo(() => {
     return new MemoryVectorStore({
-      embeddings: new ExecuTorchEmbeddings({
+      embeddings: new ExecuTorchTextEmbeddings({
         modelSource: ALL_MINILM_L6_V2,
         tokenizerSource: ALL_MINILM_L6_V2_TOKENIZER,
       }),

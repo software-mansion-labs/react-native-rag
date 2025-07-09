@@ -2953,11 +2953,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@react-native-rag/executorch@workspace:packages/executorch"
   dependencies:
-    react-native-executorch: ^0.4.5
+    react-native-executorch: "link:/Users/przemek/projects/ai/react-native-executorch/packages/react-native-executorch"
     react-native-rag: "workspace:*"
   peerDependencies:
-    react-native-executorch: ^0.4.5
-    react-native-rag: ^0.0.1
+    react-native-rag: "*"
   languageName: unknown
   linkType: soft
 
@@ -11609,6 +11608,12 @@ __metadata:
   checksum: 624893661f8708b6924faafb0586edc1f42b3741930866efd2dd263c9592e5abc8a4615d7a3ee41e8aa4da9486bda56c84385bc35a168269f22ec0a8432aa5de
   languageName: node
   linkType: hard
+
+"react-native-executorch@link:/Users/przemek/projects/ai/react-native-executorch/packages/react-native-executorch::locator=%40react-native-rag%2Fexecutorch%40workspace%3Apackages%2Fexecutorch":
+  version: 0.0.0-use.local
+  resolution: "react-native-executorch@link:/Users/przemek/projects/ai/react-native-executorch/packages/react-native-executorch::locator=%40react-native-rag%2Fexecutorch%40workspace%3Apackages%2Fexecutorch"
+  languageName: node
+  linkType: soft
 
 "react-native-executorch@npm:^0.4.5":
   version: 0.4.5

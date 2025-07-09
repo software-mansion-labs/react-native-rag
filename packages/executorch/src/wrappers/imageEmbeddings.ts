@@ -1,34 +1,31 @@
 import type { Embeddings, ResourceSource } from 'react-native-rag';
-import { TextEmbeddingsModule } from 'react-native-executorch';
+import { ImageEmbeddingsModule } from 'react-native-executorch';
 
-interface ExecuTorchEmbeddingsParams {
+type ExecuTorchImageEmbeddingsParams = {
   modelSource: ResourceSource;
-  tokenizerSource: ResourceSource;
-
   onDownloadProgress?: (progress: number) => void;
-}
+};
 
-export class ExecuTorchEmbeddings implements Embeddings {
+export class ExecuTorchImageEmbeddings implements Embeddings {
   private modelSource: ResourceSource;
-  private tokenizerSource: ResourceSource;
   private onDownloadProgress: (progress: number) => void;
+  private module: ImageEmbeddingsModule;
 
   private isLoaded = false;
 
   constructor({
     modelSource,
-    tokenizerSource,
     onDownloadProgress = () => {},
-  }: ExecuTorchEmbeddingsParams) {
+  }: ExecuTorchImageEmbeddingsParams) {
     this.modelSource = modelSource;
-    this.tokenizerSource = tokenizerSource;
     this.onDownloadProgress = onDownloadProgress;
+
+    this.module = new ImageEmbeddingsModule();
   }
 
   async load() {
     if (!this.isLoaded) {
-      TextEmbeddingsModule.onDownloadProgress(this.onDownloadProgress);
-      await TextEmbeddingsModule.load(this.modelSource, this.tokenizerSource);
+      await this.module.load(this.modelSource, this.onDownloadProgress);
       this.isLoaded = true;
     }
     return this;
@@ -40,7 +37,7 @@ export class ExecuTorchEmbeddings implements Embeddings {
     );
   }
 
-  async embed(text: string): Promise<number[]> {
-    return TextEmbeddingsModule.forward(text);
+  async embed(imageSource: string): Promise<number[]> {
+    return Array.from(await this.module.forward(imageSource));
   }
 }

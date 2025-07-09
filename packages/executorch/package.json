@@ -9,11 +9,10 @@
   "license": "ISC",
   "description": "",
   "peerDependencies": {
-    "react-native-executorch": "^0.4.5",
-    "react-native-rag": "^0.0.1"
+    "react-native-rag": "*"
   },
   "devDependencies": {
-    "react-native-executorch": "^0.4.5",
+    "react-native-executorch": "link:/Users/przemek/projects/ai/react-native-executorch/packages/react-native-executorch",
     "react-native-rag": "workspace:*"
   }
 }
