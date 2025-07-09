@@ -5,7 +5,7 @@
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/your-org/react-native-rag.git
+git clone https://github.com/software-mansion-labs/react-native-rag.git
 cd react-native-rag/example
 yarn
 ```
