@@ -86,7 +86,8 @@ export class MemoryVectorStore implements VectorStore {
 
   async similaritySearch(
     query: string,
-    k: number = 3
+    k: number = 3,
+    queryEmbedding?: number[]
   ): Promise<
     {
       id: string;
@@ -95,7 +96,10 @@ export class MemoryVectorStore implements VectorStore {
       similarity: number;
     }[]
   > {
-    const queryEmbedding = await this.embeddings.embed(query);
+    if (!queryEmbedding) {
+      queryEmbedding = await this.embeddings.embed(query);
+    }
+
     const results = Array.from(this.memoryVectors.values()).map(
       (memoryVector) => ({
         id: memoryVector.id,
