@@ -54,7 +54,8 @@ export interface VectorStore {
    */
   similaritySearch(
     query: string,
-    k?: number
+    k?: number,
+    queryEmbedding?: number[]
   ): Promise<
     {
       id: string;
