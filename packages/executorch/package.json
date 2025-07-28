@@ -8,11 +8,11 @@
   "license": "MIT",
   "description": "React Native ExecuTorch wrapper for React Native RAG",
   "peerDependencies": {
-    "react-native-executorch": "^0.4.5",
+    "react-native-executorch": "0.4.5",
     "react-native-rag": "^0.1.0"
   },
   "devDependencies": {
-    "react-native-executorch": "^0.4.5",
+    "react-native-executorch": "0.4.5",
     "react-native-rag": "workspace:*"
   }
 }

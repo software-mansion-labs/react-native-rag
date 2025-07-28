@@ -2953,10 +2953,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@react-native-rag/executorch@workspace:packages/executorch"
   dependencies:
-    react-native-executorch: ^0.4.5
+    react-native-executorch: 0.4.5
     react-native-rag: "workspace:*"
   peerDependencies:
-    react-native-executorch: ^0.4.5
+    react-native-executorch: 0.4.5
     react-native-rag: ^0.1.0
   languageName: unknown
   linkType: soft
@@ -11610,7 +11610,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-executorch@npm:^0.4.5":
+"react-native-executorch@npm:0.4.5":
   version: 0.4.5
   resolution: "react-native-executorch@npm:0.4.5"
   dependencies:
@@ -11668,7 +11668,7 @@ __metadata:
     react-dom: 19.0.0
     react-native: 0.79.2
     react-native-builder-bob: ^0.40.11
-    react-native-executorch: ^0.4.5
+    react-native-executorch: 0.4.5
     react-native-monorepo-config: ^0.1.9
     react-native-rag: "workspace:*"
     react-native-safe-area-context: ^5.4.1
