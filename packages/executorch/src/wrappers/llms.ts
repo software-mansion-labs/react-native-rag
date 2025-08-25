@@ -14,11 +14,12 @@ interface ExecuTorchLLMParams {
 }
 
 export class ExecuTorchLLM implements LLM {
+  private module: LLMModule;
+
   private modelSource: ResourceSource;
   private tokenizerSource: ResourceSource;
   private tokenizerConfigSource: ResourceSource;
   private onDownloadProgress: (progress: number) => void;
-  private responseCallback: (response: string) => void;
   private chatConfig: Partial<ChatConfig> | undefined;
 
   private isLoaded = false;
@@ -31,24 +32,27 @@ export class ExecuTorchLLM implements LLM {
     responseCallback = () => {},
     chatConfig,
   }: ExecuTorchLLMParams) {
+    this.module = new LLMModule({
+      responseCallback: responseCallback,
+    });
     this.modelSource = modelSource;
     this.tokenizerSource = tokenizerSource;
     this.tokenizerConfigSource = tokenizerConfigSource;
     this.onDownloadProgress = onDownloadProgress;
-    this.responseCallback = responseCallback;
     this.chatConfig = chatConfig;
   }
 
   async load() {
     if (!this.isLoaded) {
-      await LLMModule.load({
-        modelSource: this.modelSource,
-        tokenizerSource: this.tokenizerSource,
-        tokenizerConfigSource: this.tokenizerConfigSource,
-        onDownloadProgressCallback: this.onDownloadProgress,
-        responseCallback: this.responseCallback,
-      });
-      LLMModule.configure({
+      await this.module.load(
+        {
+          modelSource: this.modelSource,
+          tokenizerSource: this.tokenizerSource,
+          tokenizerConfigSource: this.tokenizerConfigSource,
+        },
+        this.onDownloadProgress
+      );
+      this.module.configure({
         chatConfig: this.chatConfig,
       });
       this.isLoaded = true;
@@ -58,20 +62,20 @@ export class ExecuTorchLLM implements LLM {
 
   async interrupt() {
     console.warn(
-      'This function will call a synchronous interrupt on the LLMModule from React Native ExecuTorch. Awaiting this method will not guarantee completion. This may change in future versions to support async interrupt.'
+      'This function will call a synchronous interrupt on the instance of LLMModule from React Native ExecuTorch. Awaiting this method will not guarantee completion. This may change in future versions to support async interrupt.'
     );
-    LLMModule.interrupt();
+    this.module.interrupt();
   }
 
   async unload() {
     console.warn(
-      'This function will call a synchronous unload on the LLMModule from React Native ExecuTorch. Awaiting this method will not guarantee completion. This may change in future versions to support async unload.'
+      'This function will call a synchronous unload on the instance of LLMModule from React Native ExecuTorch. Awaiting this method will not guarantee completion. This may change in future versions to support async unload.'
     );
-    LLMModule.delete();
+    this.module.delete();
   }
 
   async generate(messages: Message[], callback: (token: string) => void) {
-    LLMModule.setTokenCallback({ tokenCallback: callback });
-    return LLMModule.generate(messages);
+    this.module.setTokenCallback({ tokenCallback: callback });
+    return this.module.generate(messages);
   }
 }

@@ -1,10 +1,7 @@
 import { type Message, MemoryVectorStore, useRAG } from 'react-native-rag';
 import {
   QWEN3_0_6B_QUANTIZED,
-  QWEN3_TOKENIZER,
-  QWEN3_TOKENIZER_CONFIG,
   ALL_MINILM_L6_V2,
-  ALL_MINILM_L6_V2_TOKENIZER,
 } from 'react-native-executorch';
 import { useMemo, useState } from 'react';
 import {
@@ -36,18 +33,13 @@ export default function App() {
 
   const vectorStore = useMemo(() => {
     return new MemoryVectorStore({
-      embeddings: new ExecuTorchEmbeddings({
-        modelSource: ALL_MINILM_L6_V2,
-        tokenizerSource: ALL_MINILM_L6_V2_TOKENIZER,
-      }),
+      embeddings: new ExecuTorchEmbeddings(ALL_MINILM_L6_V2),
     });
   }, []);
 
   const llm = useMemo(() => {
     return new ExecuTorchLLM({
-      modelSource: QWEN3_0_6B_QUANTIZED,
-      tokenizerSource: QWEN3_TOKENIZER,
-      tokenizerConfigSource: QWEN3_TOKENIZER_CONFIG,
+      ...QWEN3_0_6B_QUANTIZED,
       onDownloadProgress: setDownloadProgress,
     });
   }, []);
