@@ -7,25 +7,26 @@ Private, local RAGs. Supercharge LLMs with your own knowledge base.
 
 ## Navigation
 
-  - [🚀 Features](#-features)
-  - [📦 Installation](#-installation)
-  - [📱 Quickstart - Example App](#-quickstart---example-app)
-  - [📚 Usage](#-usage)
+  - [:rocket: Features](#rocket-features)
+  - [:earth_africa: Real-World Example](#earth_africa-real-world-example)
+  - [:package: Installation](#package-installation)
+  - [:iphone: Quickstart - Example App](#iphone-quickstart---example-app)
+  - [:books: Usage](#books-usage)
       - [Using the `useRAG` Hook](#1-using-the-userag-hook)
       - [Using the `RAG` Class](#2-using-the-rag-class)
       - [Using RAG Components Separately](#3-using-rag-components-separately)
-  - [📖 API Reference](#-api-reference)
+  - [:book: API Reference](#book-api-reference)
       - [Hooks](#hooks)
       - [Classes](#classes)
       - [Interfaces (for Custom Components)](#interfaces-for-custom-components)
       - [Text Splitters](#text-splitters)
       - [Utilities](#utilities)
-  - [🧩 Using Custom Components](#-using-custom-components)
-  - [🔌 Plugins](#-plugins)
-  - [🤝 Contributing](#-contributing)
-  - [📄 License](#-license)
+  - [:jigsaw: Using Custom Components](#jigsaw-using-custom-components)
+  - [:electric_plug: Plugins](#electric_plug-plugins)
+  - [:handshake: Contributing](#handshake-contributing)
+  - [:page_facing_up: License](#page_facing_up-license)
 
-## 🚀 Features
+## :rocket: Features
 
   * **Modular**: Use only the components you need. Choose from `LLM`, `Embeddings`, `VectorStore`, and `TextSplitter`.
   * **Extensible**: Create your own components by implementing the `LLM`, `Embeddings`, `VectorStore`, and `TextSplitter` interfaces.
@@ -34,7 +35,13 @@ Private, local RAGs. Supercharge LLMs with your own knowledge base.
   * **Vector Store Persistence**: Includes support for SQLite with `@react-native-rag/op-sqlite` to save and manage vector stores locally.
   * **Semantic Search Ready**: Easily implement powerful semantic search in your app by using the `VectorStore` and `Embeddings` components directly.
 
-## 📦 Installation
+## :earth_africa: Real-World Example
+
+React Native RAG is powering [Private Mind](https://github.com/software-mansion-labs/private-mind), a privacy-first mobile AI app available on [App Store](https://apps.apple.com/gb/app/private-mind/id6746713439) and [Google Play](https://play.google.com/store/apps/details?id=com.swmansion.privatemind).
+
+<img width="2720" height="1085" alt="Private Mind promo" src="https://github.com/user-attachments/assets/2a5ebb32-0146-4b8e-875f-b25bb5cc50e4" />
+
+## :package: Installation
 
 ```sh
 npm install react-native-rag
@@ -48,11 +55,11 @@ npm install @react-native-rag/executorch react-native-executorch
 
 For persisting vector stores, you can use [`@react-native-rag/op-sqlite`](packages/op-sqlite/README.md):
 
-## 📱 Quickstart - Example App
+## :iphone: Quickstart - Example App
 
 For a complete example app that demonstrates how to use the library, check out the [example app](example).
 
-## 📚 Usage
+## :books: Usage
 
 We offer three ways to integrate RAG, depending on your needs.
 
@@ -220,7 +227,7 @@ const app = () => {
 }
 ```
 
-## 📖 API Reference
+## :book: API Reference
 
 ### Hooks
 
@@ -338,7 +345,7 @@ The library provides wrappers around common `langchain` text splitters. All spli
   * `dotProduct(a: number[], b: number[]): number`: Calculates the dot product of two vectors.
   * `magnitude(a: number[]): number`: Calculates the Euclidean magnitude of a vector.
 
-## 🧩 Using Custom Components
+## :jigsaw: Using Custom Components
 
 Bring your own components by creating classes that implement the `LLM`, `Embeddings`, `VectorStore` and `TextSplitter` interfaces. This allows you to use any model or service that fits your needs.
 
@@ -387,16 +394,16 @@ interface VectorStore {
 }
 ```
 
-## 🔌 Plugins
+## :electric_plug: Plugins
 
   * [`@react-native-rag/executorch`](packages/executorch/README.md): On-device inference with `react-native-executorch`.
   * [`@react-native-rag/op-sqlite`](packages/op-sqlite/README.md): Persisting vector stores using SQLite.
 
-## 🤝 Contributing
+## :handshake: Contributing
 
 Contributions are welcome! See the [contributing guide](CONTRIBUTING.md) to learn about the development workflow.
 
-## 📄 License
+## :page_facing_up: License
 
 MIT
 
