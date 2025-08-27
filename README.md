@@ -7,24 +7,24 @@ Private, local RAGs. Supercharge LLMs with your own knowledge base.
 
 ## Navigation
 
-  - [:rocket: Features](rocket-features)
-  - [:earth_africa: Real-World Example](earth_africa-real-world-example)
-  - [:package: Installation](package-installation)
-  - [:iphone: Quickstart - Example App](iphone-quickstart---example-app)
-  - [:books: Usage](books-usage)
+  - [:rocket: Features](#rocket-features)
+  - [:earth_africa: Real-World Example](#earth_africa-real-world-example)
+  - [:package: Installation](#package-installation)
+  - [:iphone: Quickstart - Example App](#iphone-quickstart---example-app)
+  - [:books: Usage](#books-usage)
       - [Using the `useRAG` Hook](#1-using-the-userag-hook)
       - [Using the `RAG` Class](#2-using-the-rag-class)
       - [Using RAG Components Separately](#3-using-rag-components-separately)
-  - [:book: API Reference](book-api-reference)
+  - [:book: API Reference](#book-api-reference)
       - [Hooks](#hooks)
       - [Classes](#classes)
       - [Interfaces (for Custom Components)](#interfaces-for-custom-components)
       - [Text Splitters](#text-splitters)
       - [Utilities](#utilities)
-  - [:jigsaw: Using Custom Components](jigsaw-using-custom-components)
-  - [:electric_plug: Plugins](electric-plug-plugins)
-  - [:handshake: Contributing](handshake-contributing)
-  - [:page_facing_up: License](page_facing_up-license)
+  - [:jigsaw: Using Custom Components](#jigsaw-using-custom-components)
+  - [:electric_plug: Plugins](#electric_plug-plugins)
+  - [:handshake: Contributing](#handshake-contributing)
+  - [:page_facing_up: License](#page_facing_up-license)
 
 ## :rocket: Features
 
