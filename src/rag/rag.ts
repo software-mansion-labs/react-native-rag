@@ -1,5 +1,5 @@
 import { RecursiveCharacterTextSplitter } from '../text-splitters/langchain';
-import type { Message } from '../types/common';
+import type { Message, SearchResult } from '../types/common';
 import type { LLM } from '../interfaces/llm';
 import type { TextSplitter } from '../interfaces/textSplitter';
 import type { VectorStore } from '../interfaces/vectorStore';
@@ -127,6 +127,7 @@ Context: ${retrievedDocs.map((doc) => doc.content).join('\n')}`;
    * @param options Optional parameters for generation:
    * - `augmentedGeneration`: Whether to use augmented generation with retrieved documents (default: true).
    * - `k`: Number of documents to retrieve (default: 3).
+   * - `predicate`: Function to filter retrieved documents (default: includes all).
    * - `questionGenerator`: Function to generate the question from messages for the document retrieval step. (default: uses last user message).
    * - `promptGenerator`: Function to generate the prompt from messages and retrieved documents (default: uses last user message and retrieved docs).
    * - `callback`: Optional callback function to handle token generation.
@@ -137,6 +138,7 @@ Context: ${retrievedDocs.map((doc) => doc.content).join('\n')}`;
     options: {
       augmentedGeneration?: boolean;
       k?: number;
+      predicate?: (value: SearchResult) => boolean;
       questionGenerator?: (messages: Message[]) => string;
       promptGenerator?: (
         messages: Message[],
@@ -155,6 +157,7 @@ Context: ${retrievedDocs.map((doc) => doc.content).join('\n')}`;
     const {
       augmentedGeneration = true,
       k = 3,
+      predicate = () => true,
       questionGenerator = this.questionGenerator,
       promptGenerator = this.promptGenerator,
       callback = () => {},
@@ -170,7 +173,8 @@ Context: ${retrievedDocs.map((doc) => doc.content).join('\n')}`;
     }
     const retrievedDocs = await this.vectorStore.similaritySearch(
       questionGenerator(input),
-      k
+      k,
+      predicate
     );
     const prompt = promptGenerator(input, retrievedDocs);
     const augmentedInput: Message[] = [

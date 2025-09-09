@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { RAG, type RAGParams } from '../rag/rag';
-import type { Message } from '../types/common';
+import type { Message, SearchResult } from '../types/common';
 import type { TextSplitter } from '../interfaces/textSplitter';
 
 /**
@@ -75,7 +75,7 @@ export function useRAG({ vectorStore, llm, preventLoad }: UseRAGParams) {
   /**
    * Generates a text response.
    * @param {Message[] | string} input - Input messages or query.
-   * @param {object} [options={}] - Generation options (augmentedGeneration, k, questionGenerator, promptGenerator).
+   * @param {object} [options={}] - Generation options (augmentedGeneration, k, predicate, questionGenerator, promptGenerator).
    * @returns {Promise<string>} Complete generated string.
    * @throws {Error} If not ready or busy.
    */
@@ -85,6 +85,7 @@ export function useRAG({ vectorStore, llm, preventLoad }: UseRAGParams) {
       options: {
         augmentedGeneration?: boolean;
         k?: number;
+        predicate?: (value: SearchResult) => boolean;
         questionGenerator?: (messages: Message[]) => string;
         promptGenerator?: (
           messages: Message[],

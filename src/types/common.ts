@@ -21,3 +21,13 @@ export interface Message {
  * This type is flexible to cover different model loading strategies.
  */
 export type ResourceSource = string | number | object;
+
+/**
+ * Defines the structure of a search result from a vector store.
+ */
+export interface SearchResult {
+  id: string;
+  content: string;
+  metadata?: Record<string, any>;
+  similarity: number;
+}

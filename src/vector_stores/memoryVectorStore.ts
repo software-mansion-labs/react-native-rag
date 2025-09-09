@@ -1,5 +1,6 @@
 import type { Embeddings } from '../interfaces/embeddings';
 import type { VectorStore } from '../interfaces/vectorStore';
+import type { SearchResult } from '../types/common';
 import { uuidv4 } from '../utils/uuidv4';
 import { cosine } from '../utils/vectorMath';
 
@@ -86,24 +87,20 @@ export class MemoryVectorStore implements VectorStore {
 
   async similaritySearch(
     query: string,
-    k: number = 3
-  ): Promise<
-    {
-      id: string;
-      content: string;
-      metadata?: Record<string, any>;
-      similarity: number;
-    }[]
-  > {
+    k: number = 3,
+    predicate: (value: SearchResult) => boolean = () => true
+  ): Promise<SearchResult[]> {
     const queryEmbedding = await this.embeddings.embed(query);
-    const results = Array.from(this.memoryVectors.values()).map(
-      (memoryVector) => ({
+    const results = Array.from(this.memoryVectors.values())
+      .map((memoryVector) => ({
         id: memoryVector.id,
         content: memoryVector.content,
         metadata: memoryVector.metadata,
         similarity: cosine(queryEmbedding, memoryVector.embedding),
-      })
-    );
-    return results.sort((a, b) => b.similarity - a.similarity).slice(0, k);
+      }))
+      .filter(predicate)
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, k);
+    return results;
   }
 }
