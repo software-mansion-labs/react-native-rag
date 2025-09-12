@@ -21,6 +21,7 @@ Private, local RAGs. Supercharge LLMs with your own knowledge base.
       - [Interfaces (for Custom Components)](#interfaces-for-custom-components)
       - [Text Splitters](#text-splitters)
       - [Utilities](#utilities)
+      - [Types](#types)
   - [:jigsaw: Using Custom Components](#jigsaw-using-custom-components)
   - [:electric_plug: Plugins](#electric_plug-plugins)
   - [:handshake: Contributing](#handshake-contributing)
@@ -272,11 +273,12 @@ The core class for managing the RAG workflow.
 
   * `async load(): Promise<this>`: Initializes the vector store and loads the LLM.
   * `async unload(): Promise<void>`: Unloads the vector store and LLM.
-  * `async generate(input: Message[] | string, options?: { augmentedGeneration?: boolean; k?: number; questionGenerator?: Function; promptGenerator?: Function; callback?: (token: string) => void }): Promise<string>` Generates a response.
+  * `async generate(input: Message[] | string, options?: { augmentedGeneration?: boolean; k?: number; predicate?: (value: SearchResult) => boolean; questionGenerator?: Function; promptGenerator?: Function; callback?: (token: string) => void }): Promise<string>` Generates a response.
     * `input` (`Message[] | string`): A string or an array of `Message` objects.
     * `options` (object, optional): Generation options.
       * `augmentedGeneration` (`boolean`, optional): If `true` (default), retrieves context from the vector store to augment the prompt.
       * `k` (`number`, optional): Number of documents to retrieve (default: `3`).
+      * `predicate` (`function`, optional): Function to filter retrieved documents (default: includes all).
       * `questionGenerator` (`function`, optional): Custom question generator.
       * `promptGenerator` (`function`, optional): Custom prompt generator.
       * `callback` (`function`, optional): A function that receives tokens as they are generated.
@@ -322,7 +324,7 @@ These interfaces define the contracts for creating your own custom components.
   * `add(document: string, metadata?: Record<string, any>): Promise<string>`: Adds a document.
   * `update(id: string, document?: string, metadata?: Record<string, any>): Promise<void>`: Updates a document.
   * `delete(id: string): Promise<void>`: Deletes a document.
-  * `similaritySearch(query: string, k?: number): Promise<{ id: string; content: string; ... }[]>`: Searches for `k` similar documents.
+  * `similaritySearch(query: string, k?: number, predicate?: (value: SearchResult) => boolean): Promise<SearchResult[]>`: Searches for `k` similar documents. Which can be filtered with an optional `predicate` function.
 
 #### `TextSplitter`
 
@@ -344,6 +346,24 @@ The library provides wrappers around common `langchain` text splitters. All spli
   * `cosine(a: number[], b: number[]): number`: Calculates the cosine similarity between two vectors.
   * `dotProduct(a: number[], b: number[]): number`: Calculates the dot product of two vectors.
   * `magnitude(a: number[]): number`: Calculates the Euclidean magnitude of a vector.
+
+### Types
+
+```typescript
+interface Message {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
+
+type ResourceSource = string | number | object;
+
+interface SearchResult {
+  id: string;
+  content: string;
+  metadata?: Record<string, any>;
+  similarity: number;
+}
+```
 
 ## :jigsaw: Using Custom Components
 
@@ -382,15 +402,9 @@ interface VectorStore {
   delete(id: string): Promise<void>;
   similaritySearch(
     query: string,
-    k?: number
-  ): Promise<
-    {
-      id: string;
-      content: string;
-      metadata?: Record<string, any>;
-      similarity: number;
-    }[]
-  >;
+    k?: number,
+    predicate?: (value: SearchResult) => boolean
+  ): Promise<SearchResult[]>;
 }
 ```
 

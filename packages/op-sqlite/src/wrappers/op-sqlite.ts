@@ -1,4 +1,9 @@
-import { type VectorStore, type Embeddings, uuidv4 } from 'react-native-rag';
+import {
+  type VectorStore,
+  type Embeddings,
+  uuidv4,
+  type SearchResult,
+} from 'react-native-rag';
 import { open, type DB } from '@op-engineering/op-sqlite';
 
 export interface OPSQLiteVectorStoreParams {
@@ -107,27 +112,35 @@ export class OPSQLiteVectorStore implements VectorStore {
     }
   }
 
-  async similaritySearch(query: string, k: number = 3) {
+  async similaritySearch(
+    query: string,
+    k: number = 3,
+    predicate: (value: SearchResult) => boolean = () => true
+  ): Promise<SearchResult[]> {
     const queryEmbedding = await this.embeddings.embed(query);
     const vectorStr = `[${queryEmbedding.join(',')}]`;
-    const results = await this.db.execute(
+    const queryResult = await this.db.execute(
       `
         SELECT id, content, vector_distance_cos(embedding, vector(?)) as cosine_distance, metadata
         FROM vectors
-        ORDER BY cosine_distance ASC
-        LIMIT ?;
+        ORDER BY cosine_distance ASC;
       `,
-      [vectorStr, k]
+      [vectorStr]
     );
-    return results.rows.map((row) => {
-      const id = row.id as string;
-      const content = row.content as string;
-      const metadata = row.metadata
-        ? (JSON.parse(row.metadata as string) as Record<string, any>)
-        : undefined;
-      const similarity = 1 - (row.cosine_distance as number); // Convert cosine distance to similarity
-      return { id, content, metadata, similarity };
-    });
+    const results = Array.from<SearchResult>(
+      queryResult.rows.map((row: any) => {
+        const id = row.id as string;
+        const content = row.content as string;
+        const metadata = row.metadata
+          ? (JSON.parse(row.metadata as string) as Record<string, any>)
+          : undefined;
+        const similarity = 1 - (row.cosine_distance as number); // Convert cosine distance to similarity
+        return { id, content, metadata, similarity };
+      })
+    )
+      .filter(predicate)
+      .slice(0, k);
+    return results;
   }
 
   async deleteVectorStore() {

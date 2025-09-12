@@ -94,12 +94,13 @@ The `OPSQLiteVectorStore` class implements the `VectorStore` interface from `rea
 
       * **Throws**: An error if the document with the specified `id` does not exist.
 
-  * #### `similaritySearch(query: string, k?: number): Promise<object[]>`
+  * #### `similaritySearch(query: string, k?: number, predicate?: (value: SearchResult) => boolean): Promise<SearchResult[]>`
 
     Finds the most relevant documents in the store based on a query string. It generates an embedding for the query and returns the top `k` documents that are most similar.
 
       * `query`: The text to search for.
       * `k`: The number of similar documents to return. Defaults to `3`.
+      * `predicate`: An optional function to filter the search results. It receives each result object and should return `true` to include the result or `false` to exclude it. If not provided, all results are included.
       * **Returns**: A `Promise` that resolves with an array of result objects, each containing `{ id, content, metadata, similarity }`. The `similarity` score ranges from 0 to 1, where 1 means a perfect match.
 
   * #### `deleteVectorStore(): Promise<void>`

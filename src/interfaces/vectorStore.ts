@@ -1,3 +1,5 @@
+import type { SearchResult } from '../types/common';
+
 /**
  * Defines the essential operations for a vector store.
  * A vector store efficiently stores and retrieves high-dimensional vectors,
@@ -49,18 +51,13 @@ export interface VectorStore {
   /**
    * Performs a similarity search against the stored vectors.
    * @param query The query string to search for.
-   * @param k The number of top similar results to return. Defaults to 3.
+   * @param k The number of top similar results to return.
+   * @param predicate An optional function to filter results based on custom criteria.
    * @returns An array of objects containing the ID, content, metadata, and similarity score for each result.
    */
   similaritySearch(
     query: string,
-    k?: number
-  ): Promise<
-    {
-      id: string;
-      content: string;
-      metadata?: Record<string, any>;
-      similarity: number;
-    }[]
-  >;
+    k?: number,
+    predicate?: (value: SearchResult) => boolean
+  ): Promise<SearchResult[]>;
 }
