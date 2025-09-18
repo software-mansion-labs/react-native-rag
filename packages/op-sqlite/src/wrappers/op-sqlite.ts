@@ -112,6 +112,37 @@ export class OPSQLiteVectorStore implements VectorStore {
     }
   }
 
+  async deleteMany(predicate: (value: SearchResult) => boolean = () => false) {
+    const response = await this.db.execute(
+      'SELECT id, content, metadata FROM vectors'
+    );
+    const rows = response.rows;
+    const idsToDelete: string[] = [];
+    for (const row of rows) {
+      const id = row.id as string;
+      const content = row.content as string;
+      const metadata = row.metadata
+        ? (JSON.parse(row.metadata as string) as Record<string, any>)
+        : undefined;
+      const searchResult: SearchResult = {
+        id,
+        content,
+        metadata,
+        similarity: 1,
+      };
+      if (predicate(searchResult)) {
+        idsToDelete.push(id);
+      }
+    }
+    if (idsToDelete.length > 0) {
+      const placeholders = idsToDelete.map(() => '?').join(',');
+      await this.db.execute(
+        `DELETE FROM vectors WHERE id IN (${placeholders})`,
+        idsToDelete
+      );
+    }
+  }
+
   async similaritySearch(
     query: string,
     k: number = 3,
