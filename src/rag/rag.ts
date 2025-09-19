@@ -1,26 +1,41 @@
 import { RecursiveCharacterTextSplitter } from '../text-splitters/langchain';
-import type { Message, SearchResult } from '../types/common';
+import type { GetResult, Message, QueryResult } from '../types/common';
 import type { LLM } from '../interfaces/llm';
 import type { TextSplitter } from '../interfaces/textSplitter';
 import type { VectorStore } from '../interfaces/vectorStore';
+import { uuidv4 } from '../utils/uuidv4';
 
-export interface RAGParams {
-  vectorStore: VectorStore;
-  llm: LLM;
-}
-
+/**
+ * Core Retrieval Augmented Generation orchestrator.
+ *
+ * The `RAG` class coordinates a `VectorStore` and an `LLM` to:
+ * - Split and ingest documents for retrieval
+ * - Retrieve relevant context for a query
+ * - Generate responses with or without augmented context
+ *
+ * @example
+ * const rag = await new RAG({ vectorStore, llm }).load();
+ * const answer = await rag.generate({ input: 'What is RAG?' });
+ * console.log(answer);
+ */
 export class RAG {
   private vectorStore: VectorStore;
   private llm: LLM;
 
-  constructor({ vectorStore, llm }: RAGParams) {
+  /**
+   * Creates a new RAG instance.
+   * @param params - Object containing the implementations.
+   * @param params.vectorStore - Vector store used for retrieval.
+   * @param params.llm - Large Language Model used for generation.
+   */
+  constructor({ vectorStore, llm }: { vectorStore: VectorStore; llm: LLM }) {
     this.vectorStore = vectorStore;
     this.llm = llm;
   }
 
   /**
    * Initializes the RAG system by loading the vector store and LLM.
-   * @returns A promise that resolves to the RAG instance.
+   * @returns A promise that resolves to the same `RAG` instance.
    */
   async load(): Promise<this> {
     await this.vectorStore.load();
@@ -30,7 +45,7 @@ export class RAG {
 
   /**
    * Unloads the RAG system, releasing resources used by the vector store and LLM.
-   * @returns A promise that resolves when the RAG system is unloaded.
+   * @returns A promise that resolves when unloading is complete.
    */
   async unload(): Promise<void> {
     await this.vectorStore.unload();
@@ -38,11 +53,15 @@ export class RAG {
   }
 
   /**
-   * Splits a document into chunks (smaller documents) and adds them to the vector store.
-   * @param document The content of the document to split and add.
-   * @param metadataGenerator An optional function to generate metadata for each chunk.
-   * @param textSplitter An optional text splitter to use. If not provided, a default `RecursiveCharacterTextSplitter({ chunkSize: 500, chunkOverlap: 100 })` will be used.
-   * @returns A promise that resolves to an array of IDs of the newly added document chunks.
+   * Splits a document into chunks and adds them to the vector store.
+   * If no `textSplitter` is provided, a default
+   * `RecursiveCharacterTextSplitter({ chunkSize: 500, chunkOverlap: 100 })` is used.
+   *
+   * @param document - The content of the document to split and add.
+   * @param metadataGenerator - Optional function to generate metadata for each chunk.
+   * Must return an array which length is equal to the number of chunks.
+   * @param textSplitter - Optional text splitter implementation.
+   * @returns Promise that resolves to the IDs of the newly added chunks.
    */
   async splitAddDocument(
     document: string,
@@ -56,53 +75,72 @@ export class RAG {
       });
     }
     const chunks = await textSplitter.splitText(document);
-    const ids: string[] = [];
+    const ids: string[] = chunks.map(() => uuidv4());
     const metadatas = metadataGenerator ? metadataGenerator(chunks) : undefined;
 
-    for (let i = 0; i < chunks.length; i++) {
-      const chunk = chunks[i]!;
-      const metadata = metadatas?.[i];
-      const id = await this.vectorStore.add(chunk, metadata);
-      ids.push(id);
+    if (metadatas && metadatas.length !== chunks.length) {
+      throw new Error(
+        `metadataGenerator must return metadata for all chunks: expected ${chunks.length}, got ${metadatas.length}`
+      );
     }
+
+    await this.vectorStore.add({
+      ids,
+      documents: chunks,
+      metadatas,
+    });
+
     return ids;
   }
 
   /**
-   * Adds a document to the vector store.
-   * @param document The content of the document to add.
-   * @param metadata Optional metadata associated with the document.
-   * @returns A promise that resolves to the ID of the newly added document.
+   * Adds documents to the vector store.
+   * @param params - Parameters for the operation.
+   * @param params.ids - Optional IDs for each document (must match `documents.length`).
+   * @param params.documents - Raw text content for each document.
+   * @param params.embeddings - Optional embeddings for each document.
+   * @param params.metadatas - Optional metadata for each document (aligned by index).
+   * @returns Promise that resolves to the IDs of the newly added documents.
    */
-  async addDocument(
-    document: string,
-    metadata?: Record<string, any>
-  ): Promise<string> {
-    return this.vectorStore.add(document, metadata);
+  async addDocument(params: {
+    ids?: string[];
+    documents: string[];
+    embeddings?: number[][];
+    metadatas?: Record<string, any>[];
+  }): Promise<string[]> {
+    return this.vectorStore.add(params);
   }
 
   /**
-   * Updates a document in the vector store by its ID.
-   * @param id The ID of the document to update.
-   * @param document Optional new content for the document.
-   * @param metadata Optional new metadata for the document.
-   * @returns A promise that resolves when the document is updated.
+   * Updates documents in the vector store by their IDs.
+   * @param params - Parameters for the update.
+   * @param params.ids - IDs of the documents to update.
+   * @param params.embeddings - New embeddings (optional; aligned by index if provided).
+   * @param params.documents - New content (optional; aligned by index if provided).
+   * @param params.metadatas - New metadata (optional; aligned by index if provided).
+   * @returns Promise that resolves when the update completes.
    */
-  async updateDocument(
-    id: string,
-    document?: string,
-    metadata?: Record<string, any>
-  ): Promise<void> {
-    return this.vectorStore.update(id, document, metadata);
+  async updateDocument(params: {
+    ids: string[];
+    embeddings?: number[][];
+    documents?: string[];
+    metadatas?: Record<string, any>[];
+  }): Promise<void> {
+    return this.vectorStore.update(params);
   }
 
   /**
-   * Deletes a document from the vector store by its ID.
-   * @param id The ID of the document to delete.
-   * @returns A promise that resolves when the document is deleted.
+   * Deletes documents from the vector store.
+   * @param params - Parameters for deletion.
+   * @param params.ids - List of document IDs to delete.
+   * @param params.predicate - Predicate to match documents for deletion.
+   * @returns Promise that resolves when deletion completes.
    */
-  async deleteDocument(id: string): Promise<void> {
-    return this.vectorStore.delete(id);
+  async deleteDocument(params: {
+    ids?: string[];
+    predicate?: (value: GetResult) => boolean;
+  }): Promise<void> {
+    return this.vectorStore.delete(params);
   }
 
   private questionGenerator(messages: Message[]): string {
@@ -112,56 +150,56 @@ export class RAG {
 
   private promptGenerator(
     messages: Message[],
-    retrievedDocs: { content: string }[]
+    retrievedDocs: QueryResult[]
   ): string {
     const lastMessage = messages[messages.length - 1];
     return `Message: ${lastMessage?.content || ''}
-Context: ${retrievedDocs.map((doc) => doc.content).join('\n')}`;
+Context: ${retrievedDocs.map((result) => result.document).join('\n')}`;
   }
 
   /**
    * Generates a response based on the input messages and retrieved documents.
    * If `augmentedGeneration` is true, it retrieves relevant documents from the vector store
    * and includes them in the prompt for the LLM.
-   * @param input The input messages or a single string message.
-   * @param options Optional parameters for generation:
-   * - `augmentedGeneration`: Whether to use augmented generation with retrieved documents (default: true).
-   * - `k`: Number of documents to retrieve (default: 3).
-   * - `predicate`: Function to filter retrieved documents (default: includes all).
-   * - `questionGenerator`: Function to generate the question from messages for the document retrieval step. (default: uses last user message).
-   * - `promptGenerator`: Function to generate the prompt from messages and retrieved documents (default: uses last user message and retrieved docs).
-   * - `callback`: Optional callback function to handle token generation.
-   * @returns A promise that resolves to the generated response string.
+   *
+   * @param params - Generation parameters.
+   * @param params.input - Input messages or a single string.
+   * @param params.augmentedGeneration - Whether to augment with retrieved context (default: true).
+   * @param params.nResults - Number of docs to retrieve (default: 3).
+   * @param params.predicate - Optional filter applied to retrieved docs.
+   * @param params.questionGenerator - Maps the message list to a search query (default: last message content).
+   * @param params.promptGenerator - Builds the context-augmented prompt from messages and retrieved docs.
+   * @param params.callback - Optional token callback for streaming.
+   * @returns Promise that resolves to the generated text.
    */
-  public async generate(
-    input: Message[] | string,
-    options: {
-      augmentedGeneration?: boolean;
-      k?: number;
-      predicate?: (value: SearchResult) => boolean;
-      questionGenerator?: (messages: Message[]) => string;
-      promptGenerator?: (
-        messages: Message[],
-        retrievedDocs: { content: string }[]
-      ) => string;
-      callback?: (token: string) => void;
-    } = {}
-  ): Promise<string> {
+  public async generate(params: {
+    input: Message[] | string;
+    augmentedGeneration?: boolean;
+    nResults?: number;
+    predicate?: (value: QueryResult) => boolean;
+    questionGenerator?: (messages: Message[]) => string;
+    promptGenerator?: (
+      messages: Message[],
+      retrievedDocs: QueryResult[]
+    ) => string;
+    callback?: (token: string) => void;
+  }): Promise<string> {
+    let { input } = params;
+    const {
+      augmentedGeneration = true,
+      nResults = 3,
+      predicate = () => true,
+      questionGenerator = this.questionGenerator,
+      promptGenerator = this.promptGenerator,
+      callback = () => {},
+    } = params;
+
     if (typeof input === 'string') {
       input = [{ role: 'user', content: input }];
     }
     if (!input.length) {
       throw new Error('No messages provided');
     }
-
-    const {
-      augmentedGeneration = true,
-      k = 3,
-      predicate = () => true,
-      questionGenerator = this.questionGenerator,
-      promptGenerator = this.promptGenerator,
-      callback = () => {},
-    } = options;
 
     if (!augmentedGeneration) {
       return this.llm.generate(input, callback);
@@ -171,12 +209,13 @@ Context: ${retrievedDocs.map((doc) => doc.content).join('\n')}`;
     if (!lastMessage?.content) {
       throw new Error('Last message has no content');
     }
-    const retrievedDocs = await this.vectorStore.similaritySearch(
-      questionGenerator(input),
-      k,
-      predicate
-    );
-    const prompt = promptGenerator(input, retrievedDocs);
+    const retrievedDocs = await this.vectorStore.query({
+      queryTexts: [questionGenerator(input)],
+      nResults,
+      queryEmbeddings: undefined,
+      predicate,
+    });
+    const prompt = promptGenerator(input, retrievedDocs[0] ?? []);
     const augmentedInput: Message[] = [
       ...input,
       { role: 'user', content: prompt },
@@ -186,7 +225,7 @@ Context: ${retrievedDocs.map((doc) => doc.content).join('\n')}`;
 
   /**
    * Interrupts the ongoing text generation process.
-   * @returns A promise that resolves when the interruption is complete.
+   * @returns Promise that resolves when the interruption is complete.
    */
   async interrupt(): Promise<void> {
     return this.llm.interrupt();

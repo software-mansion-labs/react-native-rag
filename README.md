@@ -2,7 +2,6 @@
 
 ![header](https://github.com/user-attachments/assets/dc07a506-0248-4115-9371-e0d10e6c8792)
 
-
 Private, local RAGs. Supercharge LLMs with your own knowledge base.
 
 ## Navigation
@@ -15,13 +14,6 @@ Private, local RAGs. Supercharge LLMs with your own knowledge base.
       - [Using the `useRAG` Hook](#1-using-the-userag-hook)
       - [Using the `RAG` Class](#2-using-the-rag-class)
       - [Using RAG Components Separately](#3-using-rag-components-separately)
-  - [:book: API Reference](#book-api-reference)
-      - [Hooks](#hooks)
-      - [Classes](#classes)
-      - [Interfaces (for Custom Components)](#interfaces-for-custom-components)
-      - [Text Splitters](#text-splitters)
-      - [Utilities](#utilities)
-      - [Types](#types)
   - [:jigsaw: Using Custom Components](#jigsaw-using-custom-components)
   - [:electric_plug: Plugins](#electric_plug-plugins)
   - [:handshake: Contributing](#handshake-contributing)
@@ -40,7 +32,7 @@ Private, local RAGs. Supercharge LLMs with your own knowledge base.
 
 React Native RAG is powering [Private Mind](https://github.com/software-mansion-labs/private-mind), a privacy-first mobile AI app available on [App Store](https://apps.apple.com/gb/app/private-mind/id6746713439) and [Google Play](https://play.google.com/store/apps/details?id=com.swmansion.privatemind).
 
-<img width="2720" height="1085" alt="Private Mind promo" src="https://github.com/user-attachments/assets/2a5ebb32-0146-4b8e-875f-b25bb5cc50e4" />
+<img width="2720" alt="Private Mind promo" src="https://github.com/user-attachments/assets/2a5ebb32-0146-4b8e-875f-b25bb5cc50e4" />
 
 ## :package: Installation
 
@@ -69,7 +61,7 @@ We offer three ways to integrate RAG, depending on your needs.
 The easiest way to get started. Good for simple use cases where you want to quickly set up RAG.
 
 ```tsx
-import React, { useState } from 'react';
+import React from 'react';
 import { Text } from 'react-native';
 
 import { useRAG, MemoryVectorStore } from 'react-native-rag';
@@ -98,12 +90,9 @@ const llm = new ExecuTorchLLM({
   tokenizerConfigSource: LLAMA3_2_TOKENIZER_CONFIG,
 });
 
-const app = () => {
+const App = () => {
   const rag = useRAG({ vectorStore, llm });
-  
-  return (
-    <Text>{rag.response}</Text>
-  );
+  return <Text>{rag.response}</Text>;
 };
 ```
 
@@ -128,7 +117,7 @@ import {
   LLAMA3_2_TOKENIZER_CONFIG,
 } from 'react-native-executorch';
 
-const app = () => {
+const App = () => {
   const [rag, setRag] = useState<RAG | null>(null);
   const [response, setResponse] = useState<string | null>(null);
 
@@ -147,11 +136,7 @@ const app = () => {
       });
 
       const vectorStore = new MemoryVectorStore({ embeddings });
-
-      const ragInstance = new RAG({
-        llm: llm,
-        vectorStore: vectorStore,
-      });
+      const ragInstance = new RAG({ llm, vectorStore });
 
       await ragInstance.load();
       setRag(ragInstance);
@@ -159,17 +144,15 @@ const app = () => {
     initializeRAG();
   }, []);
 
-  return (
-    <Text>{response}</Text>
-  );
-}
+  return <Text>{response}</Text>;
+};
 ```
 
 ### 3. Using RAG Components Separately
 
 For advanced use cases requiring fine-grained control.
 
-This is the recommended way you if you want to implement semantic search in your app, use the `VectorStore` and `Embeddings` classes directly.
+This is the recommended way if you want to implement semantic search in your app - use the `VectorStore` and `Embeddings` classes directly.
 
 ```tsx
 import React, { useEffect, useState } from 'react';
@@ -188,14 +171,14 @@ import {
   LLAMA3_2_TOKENIZER_CONFIG,
 } from 'react-native-executorch';
 
-const app = () => {
+const App = () => {
   const [embeddings, setEmbeddings] = useState<ExecuTorchEmbeddings | null>(null);
   const [llm, setLLM] = useState<ExecuTorchLLM | null>(null);
   const [vectorStore, setVectorStore] = useState<MemoryVectorStore | null>(null);
   const [response, setResponse] = useState<string | null>(null);
 
   useEffect(() => {
-    const initializeRAG = async () => {
+    const initialize = async () => {
       // Instantiate and load the Embeddings Model
       // NOTE: Calling load on VectorStore will automatically load the embeddings model
       // so loading the embeddings model separately is not necessary in this case.
@@ -219,194 +202,16 @@ const app = () => {
       setLLM(llm);
       setVectorStore(vectorStore);
     };
-    initializeRAG();
+    initialize();
   }, []);
-  
-  return (
-    <Text>{response}</Text>
-  );
-}
-```
 
-## :book: API Reference
-
-### Hooks
-
-#### `useRAG(params: UseRAGParams)`
-
-A React hook for Retrieval Augmented Generation (RAG). Manages the RAG system lifecycle, loading, unloading, generation, and document storage.
-
-**Parameters:**
-
-  * `params`: An object containing:
-      * `vectorStore`: An instance of a class that implements `VectorStore` interface.
-      * `llm`: An instance of a class that implements `LLM` interface.
-      * `preventLoad` (optional): A boolean to defer loading the RAG system.
-
-**Returns:** An object with the following properties:
-
-  * `response` (`string`): The current generated text from the LLM.
-  * `isReady` (`boolean`): True if the RAG system (Vector Store and LLM) is loaded.
-  * `isGenerating` (`boolean`): True if the LLM is currently generating a response.
-  * `isStoring` (`boolean`): True if a document operation (add, update, delete) is in progress.
-  * `error` (`string | null`): The last error message, if any.
-  * `generate`: A function to generate text. See `RAG.generate()` for details.
-  * `interrupt`: A function to stop the current generation. See `RAG.interrupt()` for details.
-  * `splitAddDocument`: A function to split and add a document. See `RAG.splitAddDocument()` for details.
-  * `addDocument`: Adds a document. See `RAG.addDocument()` for details.
-  * `updateDocument`: Updates a document. See `RAG.updateDocument()` for details.
-  * `deleteDocument`: Deletes a document. See `RAG.deleteDocument()` for details.
-
-### Classes
-
-#### `RAG`
-
-The core class for managing the RAG workflow.
-
-**`constructor(params: RAGParams)`**
-
-  * `params`: An object containing:
-      * `vectorStore`: An instance that implements `VectorStore` interface.
-      * `llm`: An instance that implements `LLM` interface.
-
-**Methods:**
-
-  * `async load(): Promise<this>`: Initializes the vector store and loads the LLM.
-  * `async unload(): Promise<void>`: Unloads the vector store and LLM.
-  * `async generate(input: Message[] | string, options?: { augmentedGeneration?: boolean; k?: number; predicate?: (value: SearchResult) => boolean; questionGenerator?: Function; promptGenerator?: Function; callback?: (token: string) => void }): Promise<string>` Generates a response.
-    * `input` (`Message[] | string`): A string or an array of `Message` objects.
-    * `options` (object, optional): Generation options.
-      * `augmentedGeneration` (`boolean`, optional): If `true` (default), retrieves context from the vector store to augment the prompt.
-      * `k` (`number`, optional): Number of documents to retrieve (default: `3`).
-      * `predicate` (`function`, optional): Function to filter retrieved documents (default: includes all).
-      * `questionGenerator` (`function`, optional): Custom question generator.
-      * `promptGenerator` (`function`, optional): Custom prompt generator.
-      * `callback` (`function`, optional): A function that receives tokens as they are generated.
-  * `async splitAddDocument(document: string, metadataGenerator?: (chunks: string[]) => Record<string, any>[], textSplitter?: TextSplitter): Promise<string[]>`: Splits a document into chunks and adds them to the vector store.
-  * `async addDocument(document: string, metadata?: Record<string, any>): Promise<string>`: Adds a single document to the vector store.
-  * `async updateDocument(id: string, document?: string, metadata?: Record<string, any>): Promise<void>`: Updates a document in the vector store.
-  * `async deleteDocument(id: string): Promise<void>`: Deletes a document from the vector store.
-  * `async interrupt(): Promise<void>`: Interrupts the ongoing LLM generation.
-
-#### `MemoryVectorStore`
-
-An in-memory implementation of the `VectorStore` interface. Useful for development and testing without persistent storage or when you don't need to save documents across app restarts.
-
-**`constructor(params: { embeddings: Embeddings })`**
-
-  * `params`: Requires an `embeddings` instance to generate vectors for documents.
-
-* `async load(): Promise<this>`: Loads the Embeddings model.
-
-* `async unload(): Promise<void>`: Unloads the Embeddings model.
-
-### Interfaces (for Custom Components)
-
-These interfaces define the contracts for creating your own custom components.
-
-#### `Embeddings`
-
-  * `load: () => Promise<this>`: Loads the embedding model.
-  * `unload: () => Promise<void>`: Unloads the model.
-  * `embed: (text: string) => Promise<number[]>`: Generates an embedding for a given text.
-
-#### `LLM`
-
-  * `load: () => Promise<this>`: Loads the language model.
-  * `interrupt: () => Promise<void>`: Stops the current text generation.
-  * `unload: () => Promise<void>`: Unloads the model.
-  * `generate: (messages: Message[], callback: (token: string) => void) => Promise<string>`: Generates a response from a list of messages, streaming tokens to the callback.
-
-#### `VectorStore`
-
-  * `load: () => Promise<this>`: Initializes the vector store.
-  * `unload: () => Promise<void>`: Unloads the vector store and releases resources.
-  * `add(document: string, metadata?: Record<string, any>): Promise<string>`: Adds a document.
-  * `update(id: string, document?: string, metadata?: Record<string, any>): Promise<void>`: Updates a document.
-  * `delete(id: string): Promise<void>`: Deletes a document.
-  * `similaritySearch(query: string, k?: number, predicate?: (value: SearchResult) => boolean): Promise<SearchResult[]>`: Searches for `k` similar documents. Which can be filtered with an optional `predicate` function.
-
-#### `TextSplitter`
-
-  * `splitText: (text: string) => Promise<string[]>`: Splits text into an array of chunks.
-
-### Text Splitters
-
-The library provides wrappers around common `langchain` text splitters. All splitters are initialized with `{ chunkSize: number, chunkOverlap: number }`.
-
-  * `RecursiveCharacterTextSplitter`: Splits text recursively by different characters. (Default in `RAG` class).
-  * `CharacterTextSplitter`: Splits text by a fixed character count.
-  * `TokenTextSplitter`: Splits text by token count.
-  * `MarkdownTextSplitter`: Splits text while preserving Markdown structure.
-  * `LatexTextSplitter`: Splits text while preserving LaTeX structure.
-
-### Utilities
-
-  * `uuidv4(): string`: Generates a compliant Version 4 UUID. Not cryptographically secure.
-  * `cosine(a: number[], b: number[]): number`: Calculates the cosine similarity between two vectors.
-  * `dotProduct(a: number[], b: number[]): number`: Calculates the dot product of two vectors.
-  * `magnitude(a: number[]): number`: Calculates the Euclidean magnitude of a vector.
-
-### Types
-
-```typescript
-interface Message {
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-}
-
-type ResourceSource = string | number | object;
-
-interface SearchResult {
-  id: string;
-  content: string;
-  metadata?: Record<string, any>;
-  similarity: number;
-}
+  return <Text>{response}</Text>;
+};
 ```
 
 ## :jigsaw: Using Custom Components
 
 Bring your own components by creating classes that implement the `LLM`, `Embeddings`, `VectorStore` and `TextSplitter` interfaces. This allows you to use any model or service that fits your needs.
-
-```typescript
-interface Embeddings {
-  load: () => Promise<this>;
-  unload: () => Promise<void>;
-  embed: (text: string) => Promise<number[]>;
-}
-
-interface LLM {
-  load: () => Promise<this>;
-  interrupt: () => Promise<void>;
-  unload: () => Promise<void>;
-  generate: (
-    messages: Message[],
-    callback: (token: string) => void
-  ) => Promise<string>;
-}
-
-interface TextSplitter {
-  splitText: (text: string) => Promise<string[]>;
-}
-
-interface VectorStore {
-  load: () => Promise<this>;
-  unload: () => Promise<void>;
-  add(document: string, metadata?: Record<string, any>): Promise<string>;
-  update(
-    id: string,
-    document?: string,
-    metadata?: Record<string, any>
-  ): Promise<void>;
-  delete(id: string): Promise<void>;
-  similaritySearch(
-    query: string,
-    k?: number,
-    predicate?: (value: SearchResult) => boolean
-  ): Promise<SearchResult[]>;
-}
-```
 
 ## :electric_plug: Plugins
 

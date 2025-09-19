@@ -1,18 +1,31 @@
 import { LLMModule, type ChatConfig } from 'react-native-executorch';
 import type { LLM, ResourceSource, Message } from 'react-native-rag';
 
+/**
+ * Parameters for {@link ExecuTorchLLM}.
+ */
 interface ExecuTorchLLMParams {
+  /** Source of the LLM model. */
   modelSource: ResourceSource;
+  /** Source of the tokenizer model. */
   tokenizerSource: ResourceSource;
+  /** Source of the tokenizer config. */
   tokenizerConfigSource: ResourceSource;
 
+  /** Optional download progress callback (0-1). */
   onDownloadProgress?: (progress: number) => void;
+  /** Callback invoked with final full response string. */
   responseCallback?: (response: string) => void;
+  /** Reserved: callback for message history changes (not wired currently). */
   messageHistoryCallback?: (messageHistory: Message[]) => void;
 
+  /** Optional chat configuration forwarded to ExecuTorch. */
   chatConfig?: Partial<ChatConfig>;
 }
 
+/**
+ * ExecuTorch-based implementation of {@link LLM} for React Native.
+ */
 export class ExecuTorchLLM implements LLM {
   private module: LLMModule;
 
@@ -24,6 +37,16 @@ export class ExecuTorchLLM implements LLM {
 
   private isLoaded = false;
 
+  /**
+   * Creates a new ExecuTorch LLM instance.
+   * @param params - Parameters for the instance.
+   * @param params.modelSource - Source of the LLM model.
+   * @param params.tokenizerSource - Source of the tokenizer.
+   * @param params.tokenizerConfigSource - Source of the tokenizer config.
+   * @param params.onDownloadProgress - Optional download progress callback (0-1).
+   * @param params.responseCallback - Callback invoked with final full response string.
+   * @param params.chatConfig - Optional chat configuration forwarded to ExecuTorch.
+   */
   constructor({
     modelSource,
     tokenizerSource,
@@ -42,6 +65,10 @@ export class ExecuTorchLLM implements LLM {
     this.chatConfig = chatConfig;
   }
 
+  /**
+   * Loads the model and config via `react-native-executorch`, and applies configuration.
+   * @returns Promise that resolves to the same instance.
+   */
   async load() {
     if (!this.isLoaded) {
       await this.module.load(
@@ -60,6 +87,12 @@ export class ExecuTorchLLM implements LLM {
     return this;
   }
 
+  /**
+   * Interrupts current generation. Note: interrupt is synchronous in ExecuTorch
+   * at the time of writing; this method resolves immediately after calling interrupt.
+   * Awaiting this method will not guarantee completion.
+   * @returns Promise that resolves when interrupt is initiated.
+   */
   async interrupt() {
     console.warn(
       'This function will call a synchronous interrupt on the instance of LLMModule from React Native ExecuTorch. Awaiting this method will not guarantee completion. This may change in future versions to support async interrupt.'
@@ -67,6 +100,11 @@ export class ExecuTorchLLM implements LLM {
     this.module.interrupt();
   }
 
+  /**
+   * Unloads the underlying module. Note: unload is synchronous in ExecuTorch.
+   * Awaiting this method will not guarantee completion.
+   * @returns Promise that resolves when unload is initiated.
+   */
   async unload() {
     console.warn(
       'This function will call a synchronous unload on the instance of LLMModule from React Native ExecuTorch. Awaiting this method will not guarantee completion. This may change in future versions to support async unload.'
@@ -74,6 +112,12 @@ export class ExecuTorchLLM implements LLM {
     this.module.delete();
   }
 
+  /**
+   * Generates a completion from a list of messages, streaming tokens to `callback`.
+   * @param messages - Conversation history for the model.
+   * @param callback - Token-level streaming callback.
+   * @returns Promise that resolves to the full generated string.
+   */
   async generate(messages: Message[], callback: (token: string) => void) {
     this.module.setTokenCallback({ tokenCallback: callback });
     return this.module.generate(messages);

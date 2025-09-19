@@ -1,3 +1,14 @@
+/**
+ * @packageDocumentation
+ * React Native RAG — a lightweight toolkit for building Retrieval Augmented Generation (RAG)
+ * experiences in React Native. This module re-exports public APIs, including:
+ *
+ * - Text splitters
+ * - Vector stores
+ * - Utilities (math helpers, UUID)
+ * - Core RAG class and React hook
+ * - Interfaces and types
+ */
 // Splitters
 export * from './text-splitters/langchain';
 

@@ -1,0 +1,23 @@
+{
+  "name": "React Native RAG",
+  "tsconfig": "tsconfig.json",
+  "out": "./docs",
+  "includeVersion": true,
+
+  "entryPointStrategy": "resolve",
+  "entryPoints": [
+    "./src/index.ts",
+    "./packages/executorch/src/index.ts",
+    "./packages/op-sqlite/src/index.ts"
+  ],
+  "sortEntryPoints": false,
+
+  "excludeExternals": true,
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeInternal": true,
+  "disableSources": true,
+
+  "cleanOutputDir": true,
+  "hideGenerator": true
+}

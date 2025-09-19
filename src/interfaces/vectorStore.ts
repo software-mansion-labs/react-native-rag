@@ -1,4 +1,4 @@
-import type { SearchResult } from '../types/common';
+import type { GetResult, QueryResult } from '../types/common';
 
 /**
  * Defines the essential operations for a vector store.
@@ -21,43 +21,65 @@ export interface VectorStore {
   unload: () => Promise<void>;
 
   /**
-   * Adds a single document to the vector store.
-   * @param document The content of the document.
-   * @param metadata Optional metadata associated with the document.
-   * @returns The ID of the newly added document.
+   * Adds documents to the vector store.
+   * @param params - Object containing:
+   *   - `ids`: (optional) The IDs of the documents. If not provided, they will be auto-generated.
+   *   - `documents`: Raw text content of the documents.
+   *   - `embeddings` (optional): Embeddings for the documents.
+   *   - `metadatas` (optional): Metadata associated with each document.
+   * @returns A promise that resolves to the IDs of the newly added documents.
    */
-  add(document: string, metadata?: Record<string, any>): Promise<string>;
+  add(params: {
+    ids?: string[];
+    documents: string[];
+    embeddings?: number[][];
+    metadatas?: Record<string, any>[];
+  }): Promise<string[]>;
 
   /**
-   * Updates a single document in the vector store by its ID.
-   * You must provide at least one of `document` or `metadata` to update.
-   * If `document` is provided, a new embedding will be generated.
-   * @param id The ID of the document to update.
-   * @param document Optional new content for the document.
-   * @param metadata Optional new metadata for the document.
+   * Updates documents in the vector store by their IDs.
+   * If `documents` are provided, and `embeddings` are not, new embeddings will be generated.
+   * @param params - Object containing:
+   *   - `ids`: The IDs of the documents to update.
+   *   - `embeddings` (optional): New embeddings for the documents.
+   *   - `documents` (optional): New content for the documents.
+   *   - `metadatas` (optional): New metadata for the documents.
+   * @returns A promise that resolves when the documents are updated.
    */
-  update(
-    id: string,
-    document?: string,
-    metadata?: Record<string, any>
-  ): Promise<void>;
+  update(params: {
+    ids: string[];
+    embeddings?: number[][];
+    documents?: string[];
+    metadatas?: Record<string, any>[];
+  }): Promise<void>;
 
   /**
-   * Deletes a single document from the vector store by its ID.
-   * @param id The ID of the document to delete.
+   * Deletes documents from the vector store.
+   * @param params - Object containing:
+   *   - `ids` (optional): List of document IDs to delete.
+   *   - `predicate` (optional): Predicate to match documents for deletion.
+   * @returns A promise that resolves when the documents are deleted.
    */
-  delete(id: string): Promise<void>;
+  delete(params: {
+    ids?: string[];
+    predicate?: (value: GetResult) => boolean;
+  }): Promise<void>;
 
   /**
    * Performs a similarity search against the stored vectors.
-   * @param query The query string to search for.
-   * @param k The number of top similar results to return.
-   * @param predicate An optional function to filter results based on custom criteria.
-   * @returns An array of objects containing the ID, content, metadata, and similarity score for each result.
+   * @param params - Object containing:
+   *   - `queryTexts` (optional): The raw query strings to search for.
+   *   - `queryEmbeddings` (optional): Pre-computed embeddings for the queries.
+   *   - `nResults` (optional): The number of top similar results to return per query.
+   *   - `ids` (optional): Restrict the search to these document IDs.
+   *   - `predicate` (optional): Function to filter results after retrieval.
+   * @returns A promise that resolves to an array of result arrays (one per query).
    */
-  similaritySearch(
-    query: string,
-    k?: number,
-    predicate?: (value: SearchResult) => boolean
-  ): Promise<SearchResult[]>;
+  query(params: {
+    queryTexts?: string[];
+    queryEmbeddings?: number[][];
+    nResults?: number;
+    ids?: string[];
+    predicate?: (value: QueryResult) => boolean;
+  }): Promise<QueryResult[][]>;
 }
