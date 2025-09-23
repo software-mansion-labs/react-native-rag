@@ -3,8 +3,7 @@ const max = 256;
 const RANDOM_LENGTH = 16;
 
 /**
- * Generates an array of cryptographically strong pseudo-random numbers.
- * Each number is an 8-bit unsigned integer (0-255).
+ * Generates 16 pseudo-random bytes (0-255). Not cryptographically secure.
  * @returns An array of 16 random bytes.
  */
 const rng = () => {
@@ -25,8 +24,9 @@ for (let i = 0; i < 256; i++) {
 }
 
 /**
- * Generates a compliant Version 4 UUID (Universally Unique Identifier).
- * @returns A string representing a UUID v4.
+ * Generates a Version 4 UUID string.
+ * Note: randomness is based on `Math.random()` and is not cryptographically secure.
+ * @returns UUID v4 as a string.
  */
 export function uuidv4() {
   const buf = rng();

@@ -30,9 +30,9 @@ export class CharacterTextSplitter implements TextSplitter {
 
   /**
    * Creates an instance of CharacterTextSplitter.
-   * @param {TextSplitterParams} params - The parameters for the text splitter.
-   * @param {number} params.chunkSize - The maximum size of each text chunk.
-   * @param {number} params.chunkOverlap - The amount of overlap between consecutive text chunks.
+   * @param params - Parameters for the text splitter.
+   * @param params.chunkSize - The maximum size of each text chunk.
+   * @param params.chunkOverlap - The amount of overlap between consecutive text chunks.
    */
   constructor({ chunkSize, chunkOverlap }: TextSplitterParams) {
     this.textSplitter = new LangchainCharacterTextSplitter({
@@ -43,8 +43,8 @@ export class CharacterTextSplitter implements TextSplitter {
 
   /**
    * Splits the given text into chunks based on character count.
-   * @param {string} text - The input text to be split.
-   * @returns {Promise<string[]>} A promise that resolves to an array of string chunks.
+   * @param text - The input text to be split.
+   * @returns A promise that resolves to an array of string chunks.
    */
   async splitText(text: string): Promise<string[]> {
     return this.textSplitter.splitText(text);
@@ -61,9 +61,9 @@ export class RecursiveCharacterTextSplitter implements TextSplitter {
 
   /**
    * Creates an instance of RecursiveCharacterTextSplitter.
-   * @param {TextSplitterParams} params - The parameters for the text splitter.
-   * @param {number} params.chunkSize - The maximum size of each text chunk.
-   * @param {number} params.chunkOverlap - The amount of overlap between consecutive text chunks.
+   * @param params - Parameters for the text splitter.
+   * @param params.chunkSize - The maximum size of each text chunk.
+   * @param params.chunkOverlap - The amount of overlap between consecutive text chunks.
    */
   constructor({ chunkSize, chunkOverlap }: TextSplitterParams) {
     this.textSplitter = new LangchainRecursiveCharacterTextSplitter({
@@ -74,8 +74,8 @@ export class RecursiveCharacterTextSplitter implements TextSplitter {
 
   /**
    * Splits the given text into chunks using a recursive character splitting strategy.
-   * @param {string} text - The input text to be split.
-   * @returns {Promise<string[]>} A promise that resolves to an array of string chunks.
+   * @param text - The input text to be split.
+   * @returns A promise that resolves to an array of string chunks.
    */
   async splitText(text: string): Promise<string[]> {
     return this.textSplitter.splitText(text);
@@ -91,9 +91,9 @@ export class TokenTextSplitter implements TextSplitter {
 
   /**
    * Creates an instance of TokenTextSplitter.
-   * @param {TextSplitterParams} params - The parameters for the text splitter.
-   * @param {number} params.chunkSize - The maximum size of each text chunk (in tokens).
-   * @param {number} params.chunkOverlap - The amount of overlap between consecutive text chunks (in tokens).
+   * @param params - Parameters for the text splitter.
+   * @param params.chunkSize - The maximum size of each text chunk (in tokens).
+   * @param params.chunkOverlap - The amount of overlap between consecutive text chunks (in tokens).
    */
   constructor({ chunkSize, chunkOverlap }: TextSplitterParams) {
     this.textSplitter = new LangchainTokenTextSplitter({
@@ -104,8 +104,8 @@ export class TokenTextSplitter implements TextSplitter {
 
   /**
    * Splits the given text into chunks based on token count.
-   * @param {string} text - The input text to be split.
-   * @returns {Promise<string[]>} A promise that resolves to an array of string chunks.
+   * @param text - The input text to be split.
+   * @returns A promise that resolves to an array of string chunks.
    */
   async splitText(text: string): Promise<string[]> {
     return this.textSplitter.splitText(text);
@@ -122,9 +122,9 @@ export class MarkdownTextSplitter implements TextSplitter {
 
   /**
    * Creates an instance of MarkdownTextSplitter.
-   * @param {TextSplitterParams} params - The parameters for the text splitter.
-   * @param {number} params.chunkSize - The maximum size of each text chunk.
-   * @param {number} params.chunkOverlap - The amount of overlap between consecutive text chunks.
+   * @param params - Parameters for the text splitter.
+   * @param params.chunkSize - The maximum size of each text chunk.
+   * @param params.chunkOverlap - The amount of overlap between consecutive text chunks.
    */
   constructor({ chunkSize, chunkOverlap }: TextSplitterParams) {
     this.textSplitter = new LangchainMarkdownTextSplitter({
@@ -135,8 +135,8 @@ export class MarkdownTextSplitter implements TextSplitter {
 
   /**
    * Splits the given Markdown text into chunks.
-   * @param {string} text - The input Markdown text to be split.
-   * @returns {Promise<string[]>} A promise that resolves to an array of string chunks.
+   * @param text - The input Markdown text to be split.
+   * @returns A promise that resolves to an array of string chunks.
    */
   async splitText(text: string): Promise<string[]> {
     return this.textSplitter.splitText(text);
@@ -153,9 +153,9 @@ export class LatexTextSplitter implements TextSplitter {
 
   /**
    * Creates an instance of LatexTextSplitter.
-   * @param {TextSplitterParams} params - The parameters for the text splitter.
-   * @param {number} params.chunkSize - The maximum size of each text chunk.
-   * @param {number} params.chunkOverlap - The amount of overlap between consecutive text chunks.
+   * @param params - Parameters for the text splitter.
+   * @param params.chunkSize - The maximum size of each text chunk.
+   * @param params.chunkOverlap - The amount of overlap between consecutive text chunks.
    */
   constructor({ chunkSize, chunkOverlap }: TextSplitterParams) {
     this.textSplitter = new LangchainLatexTextSplitter({
@@ -166,8 +166,8 @@ export class LatexTextSplitter implements TextSplitter {
 
   /**
    * Splits the given LaTeX text into chunks.
-   * @param {string} text - The input LaTeX text to be split.
-   * @returns {Promise<string[]>} A promise that resolves to an array of string chunks.
+   * @param text - The input LaTeX text to be split.
+   * @returns A promise that resolves to an array of string chunks.
    */
   async splitText(text: string): Promise<string[]> {
     return this.textSplitter.splitText(text);

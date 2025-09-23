@@ -55,7 +55,9 @@ export default function App() {
     try {
       if (ids.length) {
         for (const id of ids) {
-          await rag.deleteDocument(id);
+          await rag.deleteDocument({
+            ids: [id],
+          });
         }
         setIds([]);
       }
@@ -88,7 +90,8 @@ export default function App() {
     setMessage('');
 
     try {
-      const result = await rag.generate([...messages, newMessage], {
+      const result = await rag.generate({
+        input: [...messages, newMessage],
         augmentedGeneration,
       });
       setMessages((prevMessages) => [

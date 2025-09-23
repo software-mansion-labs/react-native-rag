@@ -29,8 +29,9 @@ export function magnitude(a: number[]): number {
  * Cosine similarity measures the cosine of the angle between two non-zero vectors.
  * It is a measure of similarity between two vectors, ranging from -1 (opposite) to 1 (identical),
  * with 0 indicating orthogonality (no similarity).
- * @param a The first vector (array of numbers).
- * @param b The second vector (array of numbers).
+ * Note: both vectors must have non-zero magnitude to avoid division by zero.
+ * @param a - The first vector.
+ * @param b - The second vector.
  * @returns The cosine similarity between the two vectors.
  */
 export function cosine(a: number[], b: number[]): number {

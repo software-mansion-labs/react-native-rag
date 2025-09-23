@@ -1,38 +1,34 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { RAG, type RAGParams } from '../rag/rag';
-import type { Message, SearchResult } from '../types/common';
+import { RAG } from '../rag/rag';
+import type { Message, QueryResult, GetResult } from '../types/common';
 import type { TextSplitter } from '../interfaces/textSplitter';
-
-/**
- * Parameters for the useRAG hook.
- */
-interface UseRAGParams extends RAGParams {
-  /**
-   * Controls automatic loading of the RAG system (vector store and LLM)
-   * on mount or when changed from `true` to `false`. Set `true` to defer loading.
-   */
-  preventLoad?: boolean;
-}
+import type { VectorStore } from '../interfaces/vectorStore';
+import type { LLM } from '../interfaces/llm';
 
 /**
  * A React hook for Retrieval Augmented Generation (RAG).
  * Manages RAG system lifecycle, loading, unloading, generation, and document storage.
  *
- * @param {UseRAGParams} params - RAG configuration (vectorStore, llm, preventLoad).
- * @returns {object} RAG state and functions.
- * @returns {string} return.response - Current generated text.
- * @returns {boolean} return.isReady - True if RAG system is loaded.
- * @returns {boolean} return.isGenerating - True if LLM is generating.
- * @returns {boolean} return.isStoring - True if document operation is in progress.
- * @returns {string | null} return.error - Last error message.
- * @returns {function} return.generate - Function to generate text with or without RAG augmentation.
- * @returns {function} return.interrupt - Function to stop current generation.
- * @returns {function} return.splitAddDocument - Splits and adds a document to the vector store.
- * @returns {function} return.addDocument - Adds a single document to the vector store.
- * @returns {function} return.updateDocument - Updates a document in the vector store.
- * @returns {function} return.deleteDocument - Deletes a document from the vector store.
+ * @param params - RAG configuration.
+ * @returns An object with state and RAG operations: `response`, `isReady`, `isGenerating`, `isStoring`, `error`, and functions `generate`, `interrupt`, `splitAddDocument`, `addDocument`, `updateDocument`, `deleteDocument`.
+ *
+ * @example
+ * // Basic usage in a component
+ * const { isReady, response, generate } = useRAG({ vectorStore, llm });
+ * useEffect(() => {
+ *   if (!isReady) return;
+ *   generate({ input: 'What is RAG?' });
+ * }, [isReady]);
  */
-export function useRAG({ vectorStore, llm, preventLoad }: UseRAGParams) {
+export function useRAG({
+  vectorStore,
+  llm,
+  preventLoad = false,
+}: {
+  vectorStore: VectorStore;
+  llm: LLM;
+  preventLoad?: boolean;
+}) {
   const [response, setResponse] = useState<string>('');
   const [isReady, setIsReady] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -46,15 +42,14 @@ export function useRAG({ vectorStore, llm, preventLoad }: UseRAGParams) {
 
     if (preventLoad) return;
 
-    const load = async () => {
+    (async () => {
       try {
         await rag.load();
         setIsReady(true);
       } catch (e) {
         setError(e instanceof Error ? e.message : 'RAG load error.');
       }
-    };
-    load();
+    })();
 
     const unload = async () => {
       try {
@@ -74,35 +69,41 @@ export function useRAG({ vectorStore, llm, preventLoad }: UseRAGParams) {
 
   /**
    * Generates a text response.
-   * @param {Message[] | string} input - Input messages or query.
-   * @param {object} [options={}] - Generation options (augmentedGeneration, k, predicate, questionGenerator, promptGenerator).
-   * @returns {Promise<string>} Complete generated string.
-   * @throws {Error} If not ready or busy.
+   * @param params - Object containing:
+   *   - `input`: User input as a string or array of messages.
+   *   - `augmentedGeneration` (optional): Whether to use RAG augmentation (default: true).
+   *   - `nResults` (optional): Number of documents to retrieve for augmentation (default: 3).
+   *   - `predicate` (optional): Predicate to filter retrieved documents.
+   *   - `questionGenerator` (optional): Function to generate a question from messages.
+   *   - `promptGenerator` (optional): Function to generate a prompt from messages and retrieved documents.
+   *   - `callback` (optional): Callback function for streaming tokens.
+   * @returns A promise that resolves to the generated text.
+   * @throws Error if RAG is not ready or is currently generating.
    */
   const generate = useCallback(
-    async (
-      input: Message[] | string,
-      options: {
-        augmentedGeneration?: boolean;
-        k?: number;
-        predicate?: (value: SearchResult) => boolean;
-        questionGenerator?: (messages: Message[]) => string;
-        promptGenerator?: (
-          messages: Message[],
-          retrievedDocs: { content: string }[]
-        ) => string;
-      } = {}
-    ): Promise<string> => {
+    async (params: {
+      input: Message[] | string;
+      augmentedGeneration?: boolean;
+      nResults?: number;
+      predicate?: (value: QueryResult) => boolean;
+      questionGenerator?: (messages: Message[]) => string;
+      promptGenerator?: (
+        messages: Message[],
+        retrievedDocs: QueryResult[]
+      ) => string;
+      callback?: (token: string) => void;
+    }): Promise<string> => {
       if (!isReady) throw new Error('RAG not ready.');
       if (isGenerating) throw new Error('RAG busy generating.');
       setResponse('');
       setError(null);
       try {
         setIsGenerating(true);
-        return await rag.generate(input, {
-          ...options,
+        return await rag.generate({
+          ...params,
           callback: (token: string) => {
             setResponse((prev) => prev + token);
+            params.callback?.(token);
           },
         });
       } catch (e) {
@@ -128,11 +129,10 @@ export function useRAG({ vectorStore, llm, preventLoad }: UseRAGParams) {
 
   /**
    * Splits and adds a document to the vector store.
-   * @param {string} document - Document content.
-   * @param {(chunks: string[]) => Record<string, any>[]} [metadataGenerator] - Optional metadata generator.
-   * @param {TextSplitter} [textSplitter] - Optional text splitter.
-   * @returns {Promise<string[]>} IDs of added chunks.
-   * @throws {Error} If not ready or busy storing.
+   * @param document - Document content.
+   * @param metadataGenerator - Optional metadata generator.
+   * @param textSplitter - Optional text splitter.
+   * @returns IDs of added chunks.
    */
   const splitAddDocument = useCallback(
     async (
@@ -161,23 +161,28 @@ export function useRAG({ vectorStore, llm, preventLoad }: UseRAGParams) {
   );
 
   /**
-   * Adds a single document to the vector store.
-   * @param {string} document - Document content.
-   * @param {Record<string, any>} [metadata] - Optional metadata.
-   * @returns {Promise<string>} ID of added document.
-   * @throws {Error} If not ready or busy storing.
+   * Adds documents to the vector store.
+   * @param params - Object containing:
+   *   - `ids`: (optional) The IDs of the documents. If not provided, they will be auto-generated.
+   *   - `documents`: Raw text content of the documents.
+   *   - `embeddings` (optional): Embeddings for the documents.
+   *   - `metadatas` (optional): Metadata associated with each document.
+   * @returns A promise that resolves to the IDs of the newly added documents.
+   * @throws Error if RAG is not ready or is currently storing.
    */
   const addDocument = useCallback(
-    async (
-      document: string,
-      metadata?: Record<string, any>
-    ): Promise<string> => {
+    async (params: {
+      ids?: string[];
+      documents: string[];
+      embeddings?: number[][];
+      metadatas?: Record<string, any>[];
+    }): Promise<string[]> => {
       if (!isReady) throw new Error('RAG not ready.');
       if (isStoring) throw new Error('RAG busy storing.');
       setError(null);
       try {
         setIsStoring(true);
-        return await rag.addDocument(document, metadata);
+        return await rag.addDocument(params);
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Add doc error.');
         throw e;
@@ -189,25 +194,28 @@ export function useRAG({ vectorStore, llm, preventLoad }: UseRAGParams) {
   );
 
   /**
-   * Updates a document in the vector store.
-   * @param {string} id - Document ID.
-   * @param {string} [document] - New content.
-   * @param {Record<string, any>} [metadata] - New metadata.
-   * @returns {Promise<void>}
-   * @throws {Error} If not ready or busy storing.
+   * Updates documents in the vector store.
+   * @param params - Object containing:
+   *   - `ids`: The IDs of the documents to update.
+   *   - `embeddings` (optional): New embeddings for the documents.
+   *   - `documents` (optional): New content for the documents.
+   *   - `metadatas` (optional): New metadata for the documents.
+   * @returns A promise that resolves when the documents are updated.
+   * @throws Error if RAG is not ready or is currently storing.
    */
   const updateDocument = useCallback(
-    async (
-      id: string,
-      document?: string,
-      metadata?: Record<string, any>
-    ): Promise<void> => {
+    async (params: {
+      ids: string[];
+      embeddings?: number[][];
+      documents?: string[];
+      metadatas?: Record<string, any>[];
+    }): Promise<void> => {
       if (!isReady) throw new Error('RAG not ready.');
       if (isStoring) throw new Error('RAG busy storing.');
       setError(null);
       try {
         setIsStoring(true);
-        return await rag.updateDocument(id, document, metadata);
+        return await rag.updateDocument(params);
       } finally {
         setIsStoring(false);
       }
@@ -216,19 +224,24 @@ export function useRAG({ vectorStore, llm, preventLoad }: UseRAGParams) {
   );
 
   /**
-   * Deletes a document from the vector store.
-   * @param {string} id - Document ID.
-   * @returns {Promise<void>}
-   * @throws {Error} If not ready or busy storing.
+   * Deletes documents from the vector store.
+   * @param params - Object containing:
+   *   - `ids` (optional): List of document IDs to delete.
+   *   - `predicate` (optional): Predicate to match documents for deletion.
+   * @returns A promise that resolves when the documents are deleted.
+   * @throws Error if RAG is not ready or is currently storing.
    */
   const deleteDocument = useCallback(
-    async (id: string): Promise<void> => {
+    async (params: {
+      ids?: string[];
+      predicate?: (value: GetResult) => boolean;
+    }): Promise<void> => {
       if (!isReady) throw new Error('RAG not ready.');
       if (isStoring) throw new Error('RAG busy storing.');
       setError(null);
       try {
         setIsStoring(true);
-        return await rag.deleteDocument(id);
+        return await rag.deleteDocument(params);
       } finally {
         setIsStoring(false);
       }
