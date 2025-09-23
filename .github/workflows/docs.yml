@@ -16,6 +16,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: github.repository == 'software-mansion-labs/react-native-rag'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -32,5 +33,8 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs
+          name: github-pages-${{ github.run_id }}
       - id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-${{ github.run_id }}
