@@ -71,6 +71,7 @@ export class ExecuTorchEmbeddings implements Embeddings {
       'This function will call a synchronous unload on the instance of TextEmbeddingsModule from React Native ExecuTorch. Awaiting this method will not guarantee completion. This may change in future versions to support async unload.'
     );
     this.module.delete();
+    this.isLoaded = false;
   }
 
   /**

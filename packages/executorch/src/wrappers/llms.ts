@@ -110,6 +110,7 @@ export class ExecuTorchLLM implements LLM {
       'This function will call a synchronous unload on the instance of LLMModule from React Native ExecuTorch. Awaiting this method will not guarantee completion. This may change in future versions to support async unload.'
     );
     this.module.delete();
+    this.isLoaded = false;
   }
 
   /**
