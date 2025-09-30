@@ -1,4 +1,5 @@
-import { type Message, MemoryVectorStore, useRAG } from 'react-native-rag';
+import { type Message, useRAG } from 'react-native-rag';
+import { OPSQLiteVectorStore } from '@react-native-rag/op-sqlite';
 import {
   QWEN3_0_6B_QUANTIZED,
   ALL_MINILM_L6_V2,
@@ -32,7 +33,8 @@ export default function App() {
   const [messages, setMessages] = useState<Message[]>([]);
 
   const vectorStore = useMemo(() => {
-    return new MemoryVectorStore({
+    return new OPSQLiteVectorStore({
+      name: 'rag_example_db1',
       embeddings: new ExecuTorchEmbeddings(ALL_MINILM_L6_V2),
     });
   }, []);
@@ -55,13 +57,11 @@ export default function App() {
     try {
       if (ids.length) {
         for (const id of ids) {
-          await rag.deleteDocument({
-            ids: [id],
-          });
+          await rag.deleteDocument({ predicate: (value) => value.id === id });
         }
         setIds([]);
       }
-      const newIds = await rag.splitAddDocument(document);
+      const newIds = await rag.splitAddDocument({ document });
       setIds(newIds);
       console.log('Document splitted and added with IDs:', newIds);
       setModalVisible(false);

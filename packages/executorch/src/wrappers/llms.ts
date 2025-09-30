@@ -12,14 +12,14 @@ interface ExecuTorchLLMParams {
   /** Source of the tokenizer config. */
   tokenizerConfigSource: ResourceSource;
 
-  /** Optional download progress callback (0-1). */
+  /** Download progress callback (0-1). */
   onDownloadProgress?: (progress: number) => void;
   /** Callback invoked with final full response string. */
   responseCallback?: (response: string) => void;
   /** Reserved: callback for message history changes (not wired currently). */
   messageHistoryCallback?: (messageHistory: Message[]) => void;
 
-  /** Optional chat configuration forwarded to ExecuTorch. */
+  /** Chat configuration forwarded to ExecuTorch. */
   chatConfig?: Partial<ChatConfig>;
 }
 
@@ -43,9 +43,9 @@ export class ExecuTorchLLM implements LLM {
    * @param params.modelSource - Source of the LLM model.
    * @param params.tokenizerSource - Source of the tokenizer.
    * @param params.tokenizerConfigSource - Source of the tokenizer config.
-   * @param params.onDownloadProgress - Optional download progress callback (0-1).
+   * @param params.onDownloadProgress - Download progress callback (0-1).
    * @param params.responseCallback - Callback invoked with final full response string.
-   * @param params.chatConfig - Optional chat configuration forwarded to ExecuTorch.
+   * @param params.chatConfig - Chat configuration forwarded to ExecuTorch.
    */
   constructor({
     modelSource,
@@ -88,10 +88,9 @@ export class ExecuTorchLLM implements LLM {
   }
 
   /**
-   * Interrupts current generation. Note: interrupt is synchronous in ExecuTorch
-   * at the time of writing; this method resolves immediately after calling interrupt.
+   * Interrupts current generation.
+   * Note: current ExecuTorch interrupt is synchronous.
    * Awaiting this method will not guarantee completion.
-   * @returns Promise that resolves when interrupt is initiated.
    */
   async interrupt() {
     console.warn(
@@ -101,9 +100,9 @@ export class ExecuTorchLLM implements LLM {
   }
 
   /**
-   * Unloads the underlying module. Note: unload is synchronous in ExecuTorch.
+   * Unloads the underlying module.
+   * Note: current ExecuTorch unload is synchronous.
    * Awaiting this method will not guarantee completion.
-   * @returns Promise that resolves when unload is initiated.
    */
   async unload() {
     console.warn(

@@ -9,7 +9,7 @@ interface ExecuTorchEmbeddingsParams {
   modelSource: ResourceSource;
   /** Source of the tokenizer model. */
   tokenizerSource: ResourceSource;
-  /** Optional download progress callback (0-1). */
+  /** Download progress callback (0-1). */
   onDownloadProgress?: (progress: number) => void;
 }
 
@@ -29,7 +29,7 @@ export class ExecuTorchEmbeddings implements Embeddings {
    * @param params - Parameters for the instance.
    * @param params.modelSource - Source of the embedding model.
    * @param params.tokenizerSource - Source of the tokenizer.
-   * @param params.onDownloadProgress - Optional download progress callback (0-1).
+   * @param params.onDownloadProgress - Download progress callback (0-1).
    */
   constructor({
     modelSource,
@@ -61,10 +61,9 @@ export class ExecuTorchEmbeddings implements Embeddings {
   }
 
   /**
-   * Unloads the underlying module. Note: unload is synchronous in ExecuTorch
-   * at the time of writing; this method resolves immediately after calling delete.
+   * Unloads the underlying module.
+   * Note: current ExecuTorch unload is synchronous.
    * Awaiting this method will not guarantee completion.
-   * @returns Promise that resolves when unloading is initiated.
    */
   async unload() {
     console.warn(
