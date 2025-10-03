@@ -1,10 +1,10 @@
 /**
- * Represents a chat message exchanged in a conversation.
- * - `role`: Identifies the sender (`user`, `assistant`, or `system`).
- * - `content`: The text content of the message.
+ * Chat message in a conversation.
  */
 export interface Message {
+  /** Sender role. */
   role: 'user' | 'assistant' | 'system';
+  /** Message text content. */
   content: string;
 }
 
@@ -17,24 +17,23 @@ export interface Message {
 export type ResourceSource = string | number | object;
 
 /**
- * Represents a single retrieval result.
- * Each field is aligned by index.
- * - `document`: Retrieved document text.
- * - `embedding`: Embedding vector for the document.
- * - `id`: Document identifier.
- * - `metadata`: Optional metadata object (`Record<string, any>`).
+ * Single retrieval result.
  */
 export interface GetResult {
-  document: string;
-  embedding: number[];
+  /** Document identifier. */
   id: string;
+  /** Retrieved document text. */
+  document?: string;
+  /** Embedding vector for the document. */
+  embedding: number[];
+  /** Document metadata. */
   metadata?: Record<string, any>;
 }
 
 /**
- * Represents a single scored result from a similarity query.
- * Extends {@link GetResult} with a `similarity` score in the range [-1, 1].
+ * Retrieval result with cosine similarity score.
  */
 export interface QueryResult extends GetResult {
+  /** Similarity score. */
   similarity: number;
 }

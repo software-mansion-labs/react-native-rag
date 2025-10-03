@@ -10,76 +10,69 @@ import type { GetResult, QueryResult } from '../types/common';
 export interface VectorStore {
   /**
    * Initializes the vector store, loading necessary resources.
-   * @returns A promise that resolves to the initialized vector store instance.
+   * @returns Promise that resolves to the initialized vector store instance.
    */
   load: () => Promise<this>;
 
   /**
    * Unloads the vector store, releasing any resources used.
-   * @returns A promise that resolves when the vector store is unloaded.
+   * @returns Promise that resolves when the vector store is unloaded.
    */
   unload: () => Promise<void>;
 
   /**
-   * Adds documents to the vector store.
+   * Adds a document to the vector store.
    * @param params - Object containing:
-   *   - `ids`: (optional) The IDs of the documents. If not provided, they will be auto-generated.
-   *   - `documents`: Raw text content of the documents.
-   *   - `embeddings` (optional): Embeddings for the documents.
-   *   - `metadatas` (optional): Metadata associated with each document.
-   * @returns A promise that resolves to the IDs of the newly added documents.
+   * @param params.id - The ID of the document. If not provided, it will be auto-generated.
+   * @param params.document - Raw text content of the document.
+   * @param params.embedding - Embedding for the document. If not provided, it will be generated based on the `document`.
+   * @param params.metadata - Metadata associated with the document.
+   * @returns Promise that resolves to the ID of the newly added document.
    */
   add(params: {
-    ids?: string[];
-    documents: string[];
-    embeddings?: number[][];
-    metadatas?: Record<string, any>[];
-  }): Promise<string[]>;
+    id?: string;
+    document?: string;
+    embedding?: number[];
+    metadata?: Record<string, any>;
+  }): Promise<string>;
 
   /**
-   * Updates documents in the vector store by their IDs.
-   * If `documents` are provided, and `embeddings` are not, new embeddings will be generated.
+   * Updates a document in the vector store by its ID.
    * @param params - Object containing:
-   *   - `ids`: The IDs of the documents to update.
-   *   - `embeddings` (optional): New embeddings for the documents.
-   *   - `documents` (optional): New content for the documents.
-   *   - `metadatas` (optional): New metadata for the documents.
-   * @returns A promise that resolves when the documents are updated.
+   * @param params.id - The ID of the document to update.
+   * @param params.document - New content for the document.
+   * @param params.embedding - New embedding for the document. If not provided, it will be generated based on the `document`.
+   * @param params.metadata - New metadata for the document.
+   * @returns Promise that resolves once the document is updated.
    */
   update(params: {
-    ids: string[];
-    embeddings?: number[][];
-    documents?: string[];
-    metadatas?: Record<string, any>[];
+    id: string;
+    document?: string;
+    embedding?: number[];
+    metadata?: Record<string, any>;
   }): Promise<void>;
 
   /**
-   * Deletes documents from the vector store.
+   * Deletes documents from the vector store by the provided predicate.
    * @param params - Object containing:
-   *   - `ids` (optional): List of document IDs to delete.
-   *   - `predicate` (optional): Predicate to match documents for deletion.
-   * @returns A promise that resolves when the documents are deleted.
+   * @param params.predicate - Predicate to match documents for deletion.
+   * @returns Promise that resolves once the documents are deleted.
    */
-  delete(params: {
-    ids?: string[];
-    predicate?: (value: GetResult) => boolean;
-  }): Promise<void>;
+  delete(params: { predicate: (value: GetResult) => boolean }): Promise<void>;
 
   /**
    * Performs a similarity search against the stored vectors.
    * @param params - Object containing:
-   *   - `queryTexts` (optional): The raw query strings to search for.
-   *   - `queryEmbeddings` (optional): Pre-computed embeddings for the queries.
-   *   - `nResults` (optional): The number of top similar results to return per query.
-   *   - `ids` (optional): Restrict the search to these document IDs.
-   *   - `predicate` (optional): Function to filter results after retrieval.
-   * @returns A promise that resolves to an array of result arrays (one per query).
+   * @param params.queryText - The raw query string to search for.
+   * @param params.queryEmbedding - Pre-computed embedding for the query.
+   * @param params.nResults - The number of top similar results to return.
+   * @param params.predicate - Function to filter results after retrieval.
+   * @returns Promise that resolves to an array of {@link QueryResult}.
    */
   query(params: {
-    queryTexts?: string[];
-    queryEmbeddings?: number[][];
+    queryText?: string;
+    queryEmbedding?: number[];
     nResults?: number;
-    ids?: string[];
     predicate?: (value: QueryResult) => boolean;
-  }): Promise<QueryResult[][]>;
+  }): Promise<QueryResult[]>;
 }

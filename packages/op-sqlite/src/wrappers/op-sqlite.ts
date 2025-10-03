@@ -15,8 +15,8 @@ import { open, type DB } from '@op-engineering/op-sqlite';
  *
  * @example
  * const store = await new OPSQLiteVectorStore({ name: 'vector-db', embeddings }).load();
- * await store.add({ documents: ['hello world'] });
- * const [[top]] = await store.query({ queryTexts: ['hello'] });
+ * await store.add({ document: 'hello world' });
+ * const [top] = await store.query({ queryText: 'hello', nResults: 1 });
  * console.log(top.id, top.similarity);
  */
 export class OPSQLiteVectorStore implements VectorStore {
@@ -67,309 +67,167 @@ export class OPSQLiteVectorStore implements VectorStore {
   }
 
   /**
-   * Inserts documents with embeddings. Generates IDs when not provided.
+   * Inserts a document with an embedding. Generates an ID when not provided.
    * @param params - Parameters for the operation.
-   * @param params.ids - Optional IDs for each document (must match `documents.length`). If not provided, IDs will be generated.
-   * @param params.documents - Raw text content for each document.
-   * @param params.embeddings - Optional embeddings for each document.
-   * @param params.metadatas - Optional metadata for each document (aligned by index).
-   * @returns Promise that resolves to the IDs of the newly added documents.
+   * @param params.id - ID for the document. If not provided, it will be auto-generated.
+   * @param params.document - Raw text content for the document.
+   * @param params.embedding - Embedding for the document. If not provided, it will be generated based on the `document`.
+   * @param params.metadata - Metadata for the document.
+   * @returns Promise that resolves to the ID of the newly added document.
    */
   public async add(params: {
-    ids?: string[];
-    documents: string[];
-    embeddings?: number[][];
-    metadatas?: Record<string, any>[];
-  }): Promise<string[]> {
-    const { embeddings, documents, metadatas } = params;
-    const ids = params.ids ?? documents.map(() => uuidv4());
+    id?: string;
+    document?: string;
+    embedding?: number[];
+    metadata?: Record<string, any>;
+  }): Promise<string> {
+    const { id = uuidv4(), document, embedding, metadata } = params;
 
-    const idsLength = ids.length;
-    this.assertLengthMatchIds(embeddings, idsLength);
-    this.assertLengthMatchIds(documents, idsLength);
-    this.assertLengthMatchIds(metadatas, idsLength);
-
-    for (const id of ids) {
-      const existing = await this.db.execute(
-        'SELECT 1 FROM vectors WHERE id = ? LIMIT 1',
-        [id]
-      );
-      if (existing.rows.length > 0) {
-        throw new Error(`id already exists: ${id}`);
-      }
+    if (!document && !embedding) {
+      throw new Error('document and embedding cannot be both undefined');
     }
 
-    if (embeddings) {
-      for (const emb of embeddings) {
-        this.assertEmbeddingDim(emb);
-      }
-    }
-
-    for (let i = 0; i < idsLength; i++) {
-      const meta = metadatas?.[i] ? JSON.stringify(metadatas[i]) : null;
-      await this.db.execute(
-        'INSERT INTO vectors(id, document, embedding, metadata) VALUES (?, ?, vector(?), ?)',
-        [
-          ids[i]!,
-          documents[i]!,
-          this.arrayToScalar(
-            embeddings
-              ? embeddings[i]!
-              : await this.embeddings.embed(documents[i]!)
-          ),
-          meta,
-        ]
+    if (embedding && embedding.length !== this.embeddingDim) {
+      throw new Error(
+        `embedding dimension ${embedding.length} does not match collection embedding dimension ${this.embeddingDim}`
       );
     }
 
-    return ids;
+    if (
+      (
+        await this.db.execute('SELECT 1 FROM vectors WHERE id = ? LIMIT 1', [
+          id,
+        ])
+      ).rows.length > 0
+    ) {
+      throw new Error(`id already exists: ${id}`);
+    }
+
+    await this.db.execute(
+      'INSERT INTO vectors(id, document, embedding, metadata) VALUES (?, ?, vector(?), ?)',
+      [
+        id,
+        document ?? '',
+        `[${(embedding ?? (await this.embeddings.embed(document!))).join(',')}]`,
+        metadata ? JSON.stringify(metadata) : null,
+      ]
+    );
+
+    return id;
   }
 
   /**
-   * Updates documents by ID. If `documents` are provided and `embeddings` are not,
-   * new embeddings are computed.
+   * Updates a document by ID.
    * @param params - Parameters for the update.
-   * @param params.ids - IDs of the documents to update.
-   * @param params.embeddings - New embeddings (optional; aligned by index if provided).
-   * @param params.documents - New content (optional; aligned by index if provided).
-   * @param params.metadatas - New metadata (optional; aligned by index if provided).
+   * @param params.id - ID of the document to update.
+   * @param params.document - New content for the document.
+   * @param params.embedding - New embeddings for the document. If not provided, it will be generated based on the `document`.
+   * @param params.metadata - New metadata for the document.
    * @returns Promise that resolves when the update completes.
    */
   public async update(params: {
-    ids: string[];
-    embeddings?: number[][];
-    documents?: string[];
-    metadatas?: Record<string, any>[];
+    id: string;
+    embedding?: number[];
+    document?: string;
+    metadata?: Record<string, any>;
   }): Promise<void> {
-    const { ids, embeddings, documents, metadatas } = params;
+    const { id, document, embedding, metadata } = params;
 
-    const idsLength = ids.length;
-    this.assertLengthMatchIds(embeddings, idsLength);
-    this.assertLengthMatchIds(documents, idsLength);
-    this.assertLengthMatchIds(metadatas, idsLength);
-
-    for (const id of ids) {
-      const existing = await this.db.execute(
-        'SELECT 1 FROM vectors WHERE id = ? LIMIT 1',
-        [id]
+    if (embedding && embedding.length !== this.embeddingDim) {
+      throw new Error(
+        `embedding dimension ${embedding.length} does not match collection embedding dimension ${this.embeddingDim}`
       );
-      if (existing.rows.length === 0) {
-        throw new Error(`id not found: ${id}`);
-      }
     }
 
-    if (embeddings) {
-      for (const emb of embeddings) {
-        this.assertEmbeddingDim(emb);
-      }
-    }
-
-    for (let i = 0; i < idsLength; i++) {
-      const id = ids[i]!;
-      const row = await this.db.execute(
-        'SELECT document, embedding, metadata FROM vectors WHERE id = ?',
-        [id]
-      );
-      await this.db.execute(
-        `
-        UPDATE vectors
-        SET document = ?,
-            embedding = vector(?),
-            metadata = ?
-        WHERE id = ?
-        `,
-        [
-          documents ? documents[i]! : row.rows[0]!.document!,
-          embeddings
-            ? this.arrayToScalar(embeddings[i]!)
-            : documents
-              ? this.arrayToScalar(await this.embeddings.embed(documents[i]!))
-              : row.rows[0]!.embedding!,
-          metadatas ? JSON.stringify(metadatas[i]) : row.rows[0]!.metadata!,
+    if (
+      (
+        await this.db.execute('SELECT 1 FROM vectors WHERE id = ? LIMIT 1', [
           id,
-        ]
-      );
+        ])
+      ).rows.length === 0
+    ) {
+      throw new Error(`id not found: ${id}`);
     }
+
+    await this.db.execute(
+      'UPDATE vectors SET document = ?, embedding = vector(?), metadata = ? WHERE id = ?',
+      [
+        document ?? '',
+        `[${(embedding ?? (await this.embeddings.embed(document!))).join(',')}]`,
+        metadata ? JSON.stringify(metadata) : null,
+        id,
+      ]
+    );
   }
 
   /**
-   * Deletes documents by IDs and/or predicate.
+   * Deletes documents by predicate.
    * @param params - Parameters for deletion.
-   * @param params.ids - List of document IDs to delete.
    * @param params.predicate - Predicate to match documents for deletion.
-   * @returns Promise that resolves when deletion completes.
+   * @returns Promise that resolves once the documents are deleted.
    */
   public async delete(params: {
-    ids?: string[];
-    predicate?: (value: GetResult) => boolean;
+    predicate: (value: GetResult) => boolean;
   }): Promise<void> {
-    const { ids, predicate } = params;
+    const { predicate } = params;
 
-    if (ids && predicate) {
-      for (const id of ids) {
-        const existing = await this.db.execute(
-          'SELECT 1 FROM vectors WHERE id = ? LIMIT 1',
-          [id]
-        );
-        if (existing.rows.length === 0) {
-          throw new Error(`id not found: ${id}`);
-        }
-      }
-
-      const existingRows = await this.getRowsByIds(ids);
-      const toDelete = existingRows.filter(predicate).map((r) => r.id);
-      if (toDelete.length > 0) {
-        await this.db.execute(
-          `DELETE FROM vectors WHERE id IN (${toDelete.map(() => '?').join(',')})`,
-          toDelete
-        );
-      }
-    } else if (ids) {
-      for (const id of ids) {
-        const existing = await this.db.execute(
-          'SELECT 1 FROM vectors WHERE id = ? LIMIT 1',
-          [id]
-        );
-        if (existing.rows.length === 0) {
-          throw new Error(`id not found: ${id}`);
-        }
-      }
-
+    for (const row of (
       await this.db.execute(
-        `DELETE FROM vectors WHERE id IN (${ids.map(() => '?').join(',')})`,
-        ids
-      );
-    } else if (predicate) {
-      const allRows = await this.db.execute(
         'SELECT id, document, embedding, metadata FROM vectors'
-      );
-      const toDelete: string[] = [];
-      for (const row of allRows.rows) {
-        const getRes = this.rowToGetResult(row);
-        if (predicate(getRes)) {
-          toDelete.push(getRes.id);
-        }
-      }
-
-      if (toDelete.length > 0) {
-        await this.db.execute(
-          `DELETE FROM vectors WHERE id IN (${toDelete.map(() => '?').join(',')})`,
-          toDelete
-        );
+      )
+    ).rows) {
+      const getResult = this.rowToGetResult(row);
+      if (predicate(getResult)) {
+        await this.db.execute('DELETE FROM vectors WHERE id = ?', [
+          getResult.id,
+        ]);
       }
     }
   }
 
   /**
-   * Executes a cosine-similarity query using SQLite vector functions.
-   * Provide exactly one of `queryTexts` or `queryEmbeddings`.
+   * Executes a cosine-similarity query over stored vectors.
+   * Provide exactly one of `queryText` or `queryEmbedding`.
    * @param params - Query parameters.
-   * @param params.queryTexts - Raw query strings to search for.
-   * @param params.queryEmbeddings - Precomputed query embeddings.
+   * @param params.queryText - Raw query string to search for.
+   * @param params.queryEmbedding - Precomputed query embedding.
    * @param params.nResults - Number of top results to return.
-   * @param params.ids - Restrict the search to these document IDs.
    * @param params.predicate - Function to filter results after retrieval.
-   * @returns Promise resolving to arrays of scored results for each query.
+   * @returns Promise that resolves to an array of {@link QueryResult}.
    */
   public async query(params: {
-    queryTexts?: string[];
-    queryEmbeddings?: number[][];
+    queryText?: string;
+    queryEmbedding?: number[];
     nResults?: number;
-    ids?: string[];
     predicate?: (value: QueryResult) => boolean;
-  }): Promise<QueryResult[][]> {
-    const {
-      queryTexts,
-      queryEmbeddings,
-      nResults,
-      ids,
-      predicate = () => true,
-    } = params;
-    if (!queryTexts === !queryEmbeddings) {
+  }): Promise<QueryResult[]> {
+    const { queryText, queryEmbedding, nResults, predicate } = params;
+
+    if (!queryText && !queryEmbedding) {
+      throw new Error('queryText and queryEmbedding cannot be both undefined');
+    }
+
+    if (queryEmbedding && queryEmbedding.length !== this.embeddingDim) {
       throw new Error(
-        'Exactly one of queryTexts or queryEmbeddings must be provided'
+        `queryEmbedding dimension ${queryEmbedding.length} does not match collection embedding dimension ${this.embeddingDim}`
       );
     }
 
-    if (ids) {
-      for (const id of ids) {
-        const existing = await this.db.execute(
-          'SELECT 1 FROM vectors WHERE id = ? LIMIT 1',
-          [id]
-        );
-        if (existing.rows.length === 0) {
-          throw new Error(`id not found: ${id}`);
-        }
-      }
-    }
+    const searchEmbedding =
+      queryEmbedding ?? (await this.embeddings.embed(queryText!));
 
-    const queries: number[][] = [];
+    const res = await this.db.execute(
+      'SELECT id, document, embedding, metadata, (1.0 - vector_distance_cos(embedding, vector(?))) AS similarity FROM vectors ORDER BY similarity DESC',
+      [`[${searchEmbedding.join(',')}]`]
+    );
 
-    if (queryEmbeddings) {
-      for (const emb of queryEmbeddings) {
-        this.assertEmbeddingDim(emb);
-        queries.push(emb);
-      }
-    } else if (queryTexts) {
-      for (const text of queryTexts) {
-        const emb = await this.embeddings.embed(text);
-        queries.push(emb);
-      }
-    }
-
-    const pool: GetResult[] = ids?.length
-      ? await this.getRowsByIds(ids)
-      : (
-          await this.db.execute(
-            'SELECT id, document, embedding, metadata FROM vectors'
-          )
-        ).rows.map((r: any) => this.rowToGetResult(r));
-
-    const results: QueryResult[][] = [];
-
-    for (const q of queries) {
-      const qScalar = this.arrayToScalar(q);
-      let res;
-      if (ids && ids.length) {
-        res = await this.db.execute(
-          `
-          SELECT
-            id,
-            document,
-            embedding,
-            metadata,
-            (1.0 - vector_distance_cos(embedding, vector(?))) AS similarity
-          FROM vectors
-          WHERE vectors.id IN (${ids.map(() => '?').join(',')})
-          ORDER BY similarity DESC
-        `,
-          [qScalar, ...pool.map((r) => r.id)]
-        );
-      } else {
-        res = await this.db.execute(
-          `
-          SELECT
-            id,
-            document,
-            embedding,
-            metadata,
-            (1.0 - vector_distance_cos(embedding, vector(?))) AS similarity
-          FROM vectors
-          ORDER BY similarity DESC
-        `,
-          [qScalar]
-        );
-      }
-
-      const scored = res.rows
-        .map((r) => this.rowToGetResult(r) as QueryResult)
-        .filter(predicate)
-        .slice(0, nResults);
-
-      results.push(scored);
-    }
-
-    return results;
+    return res.rows
+      .map((r: any) => ({
+        ...this.rowToGetResult(r),
+        similarity: r.similarity as number,
+      }))
+      .filter(predicate ?? (() => true))
+      .slice(0, nResults);
   }
 
   /**
@@ -383,61 +241,11 @@ export class OPSQLiteVectorStore implements VectorStore {
    * Maps a DB row to a {@link GetResult} object.
    */
   private rowToGetResult(row: any): GetResult {
-    const embedding = Array.isArray(row.embedding)
-      ? (row.embedding as number[])
-      : Array.from(row.embedding as Float32Array);
     return {
-      id: row.id as string,
-      document: (row.document as string) ?? '',
-      embedding,
-      metadata: row.metadata
-        ? (JSON.parse(row.metadata as string) as Record<string, any>)
-        : undefined,
+      id: row.id,
+      document: row.document,
+      embedding: Array.from(new Float32Array(row.embedding)),
+      metadata: row.metadata ? JSON.parse(row.metadata) : undefined,
     };
-  }
-
-  /**
-   * Fetches rows by IDs and returns them as {@link GetResult} objects.
-   */
-  private async getRowsByIds(ids: string[]): Promise<GetResult[]> {
-    if (ids.length === 0) return [];
-    const placeholders = ids.map(() => '?').join(',');
-    const res = await this.db.execute(
-      `SELECT id, document, embedding, metadata FROM vectors WHERE id IN (${placeholders})`,
-      ids
-    );
-    return res.rows.map((r: any) => this.rowToGetResult(r));
-  }
-
-  /**
-   * Converts an array of numbers to a string representation suitable for `vector(?)` binding.
-   */
-  private arrayToScalar(arr: number[]): string {
-    return `[${arr.join(',')}]`;
-  }
-
-  /**
-   * Verifies optional arrays match expected length.
-   */
-  private assertLengthMatchIds<T>(arr: T[] | undefined, idsLength: number) {
-    if (arr && arr.length !== idsLength) {
-      throw new Error('array length must match ids length');
-    }
-  }
-
-  /**
-   * Ensures all embeddings share the same dimensionality, setting it on first use.
-   */
-  private assertEmbeddingDim(vec: number[]) {
-    if (!Array.isArray(vec) || vec.length === 0) {
-      throw new Error('embedding must be a non-empty vector');
-    }
-    if (this.embeddingDim === undefined) {
-      this.embeddingDim = vec.length;
-    } else if (vec.length !== this.embeddingDim) {
-      throw new Error(
-        `embedding dimension ${vec.length} does not match collection dimension ${this.embeddingDim}`
-      );
-    }
   }
 }

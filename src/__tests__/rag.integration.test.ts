@@ -132,13 +132,13 @@ describe('RAG (integration with MemoryVectorStore + MockEmbeddings)', () => {
     await rag.load();
 
     const doc = 'a short document that fits in one chunk';
-    const ids = await rag.splitAddDocument(doc);
+    const ids = await rag.splitAddDocument({ document: doc });
 
     expect(ids).toHaveLength(1);
     expect(embeddings.embedCalls).toContain(doc);
 
-    const results = await store.query({ queryTexts: [doc], nResults: 3 });
-    const topIds = results[0]!.map((r) => r.id);
+    const results = await store.query({ queryText: doc, nResults: 3 });
+    const topIds = results.map((r) => r.id);
     expect(ids.some((id) => topIds.includes(id))).toBe(true);
   });
 
@@ -158,12 +158,16 @@ describe('RAG (integration with MemoryVectorStore + MockEmbeddings)', () => {
       chunks.map((c, i) => ({ idx: i, len: c.length }));
 
     const doc = 'DOC-DOC';
-    const ids = await rag.splitAddDocument(doc, metaGen, splitter);
+    const ids = await rag.splitAddDocument({
+      document: doc,
+      metadataGenerator: metaGen,
+      textSplitter: splitter,
+    });
 
     expect(ids.length).toBeGreaterThan(1);
 
-    const res = await store.query({ queryTexts: ['DOC'], nResults: 10 });
-    const gotIds = new Set(res[0]!.map((r) => r.id));
+    const res = await store.query({ queryText: 'DOC', nResults: 10 });
+    const gotIds = new Set(res.map((r) => r.id));
     expect(ids.some((id) => gotIds.has(id))).toBe(true);
   });
 
@@ -180,17 +184,17 @@ describe('RAG (integration with MemoryVectorStore + MockEmbeddings)', () => {
     const spyDelete = jest.spyOn(store, 'delete');
 
     await rag.addDocument({
-      ids: ['id1'],
-      embeddings: [[1, 0, 0]],
-      documents: ['alpha'],
-      metadatas: [{ a: 1 }],
+      id: 'id1',
+      embedding: [1, 0, 0],
+      document: 'alpha',
+      metadata: { a: 1 },
     });
     expect(spyAdd).toHaveBeenCalledTimes(1);
 
-    await rag.updateDocument({ ids: ['id1'], documents: ['alpha-new'] });
+    await rag.updateDocument({ id: 'id1', document: 'alpha-new' });
     expect(spyUpdate).toHaveBeenCalledTimes(1);
 
-    await rag.deleteDocument({ ids: ['id1'] });
+    await rag.deleteDocument({ predicate: (r) => r.id === 'id1' });
     expect(spyDelete).toHaveBeenCalledTimes(1);
   });
 
@@ -221,10 +225,8 @@ describe('RAG (integration with MemoryVectorStore + MockEmbeddings)', () => {
 
     await rag.load();
 
-    await store.add({
-      ids: ['d1', 'd2'],
-      documents: ['bananas are yellow', 'apples are red'],
-    });
+    await store.add({ id: 'd1', document: 'bananas are yellow' });
+    await store.add({ id: 'd2', document: 'apples are red' });
 
     const tokens: string[] = [];
     const out = await rag.generate({
@@ -253,10 +255,7 @@ describe('RAG (integration with MemoryVectorStore + MockEmbeddings)', () => {
 
     await rag.load();
 
-    await store.add({
-      ids: ['z'],
-      documents: ['custom context'],
-    });
+    await store.add({ id: 'z', document: 'custom context' });
 
     const qSpy = jest.spyOn(store, 'query');
 
@@ -270,7 +269,7 @@ describe('RAG (integration with MemoryVectorStore + MockEmbeddings)', () => {
       promptGenerator,
     });
 
-    expect(qSpy.mock.calls[0]![0]!.queryTexts).toEqual(['custom-question']);
+    expect(qSpy.mock.calls[0]![0]!.queryText).toEqual('custom-question');
 
     const llmInput = llm.generateCalls[0]!.input;
     expect(llmInput[1]!.content).toBe('PROMPT(orig) :: custom context');
@@ -285,9 +284,19 @@ describe('RAG (integration with MemoryVectorStore + MockEmbeddings)', () => {
     await rag.load();
 
     await store.add({
-      ids: ['a', 'b', 'c'],
-      documents: ['keep this', 'drop this', 'keep as well'],
-      metadatas: [{ role: 'x' }, { role: 'y' }, { role: 'x' }],
+      id: 'a',
+      document: 'keep this',
+      metadata: { role: 'x' },
+    });
+    await store.add({
+      id: 'b',
+      document: 'drop this',
+      metadata: { role: 'y' },
+    });
+    await store.add({
+      id: 'c',
+      document: 'keep as well',
+      metadata: { role: 'x' },
     });
 
     const predicate = (r: QueryResult) => (r as any).metadata?.role === 'x';
