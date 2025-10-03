@@ -245,7 +245,7 @@ export class OPSQLiteVectorStore implements VectorStore {
       id: row.id,
       document: row.document,
       embedding: Array.from(new Float32Array(row.embedding)),
-      metadata: JSON.parse(row.metadata),
+      metadata: row.metadata ? JSON.parse(row.metadata) : undefined,
     };
   }
 }

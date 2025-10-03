@@ -115,15 +115,15 @@ export class MemoryVectorStore implements VectorStore {
       throw new Error(`id not found: ${id}`);
     }
 
+    const oldRow = this.rows.get(id)!;
+
     this.rows.set(id, {
       id,
-      document: document ?? this.rows.get(id)!.document,
+      document: document ?? oldRow.document,
       embedding:
         embedding ??
-        (document
-          ? await this.embeddings.embed(document!)
-          : this.rows.get(id)!.embedding),
-      metadata: metadata ?? this.rows.get(id)!.metadata,
+        (document ? await this.embeddings.embed(document!) : oldRow.embedding),
+      metadata: metadata ?? oldRow.metadata,
     });
   }
 
