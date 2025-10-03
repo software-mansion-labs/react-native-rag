@@ -1,6 +1,6 @@
 {
   "name": "react-native-rag",
-  "version": "0.2.0-rc3",
+  "version": "0.2.0",
   "description": "Private, local RAGs. Supercharge LLMs with your own knowledge base.",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
@@ -26,6 +26,7 @@
     "!android/gradlew",
     "!android/gradlew.bat",
     "!android/local.properties",
+    "!packages",
     "!**/__tests__",
     "!**/__fixtures__",
     "!**/__mocks__",
