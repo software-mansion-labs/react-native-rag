@@ -1,5 +1,4 @@
-import { type Message, useRAG } from 'react-native-rag';
-import { OPSQLiteVectorStore } from '@react-native-rag/op-sqlite';
+import { type Message, MemoryVectorStore, useRAG } from 'react-native-rag';
 import {
   QWEN3_0_6B_QUANTIZED,
   ALL_MINILM_L6_V2,
@@ -33,8 +32,7 @@ export default function App() {
   const [messages, setMessages] = useState<Message[]>([]);
 
   const vectorStore = useMemo(() => {
-    return new OPSQLiteVectorStore({
-      name: 'rag_example_db1',
+    return new MemoryVectorStore({
       embeddings: new ExecuTorchEmbeddings(ALL_MINILM_L6_V2),
     });
   }, []);
