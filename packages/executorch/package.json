@@ -9,7 +9,7 @@
   "description": "React Native ExecuTorch wrapper for React Native RAG",
   "peerDependencies": {
     "react-native-executorch": "^0.5.1",
-    "react-native-rag": "^0.1.0"
+    "react-native-rag": "^0.2.0"
   },
   "devDependencies": {
     "react-native-executorch": "^0.5.1",

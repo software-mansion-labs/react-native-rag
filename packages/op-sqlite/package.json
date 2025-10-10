@@ -9,7 +9,7 @@
   "description": "OP-SQLite wrapper for React Native RAG",
   "peerDependencies": {
     "@op-engineering/op-sqlite": "^14.0.4",
-    "react-native-rag": "^0.1.0"
+    "react-native-rag": "^0.2.0"
   },
   "devDependencies": {
     "@op-engineering/op-sqlite": "^14.0.4",
