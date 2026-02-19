@@ -10,6 +10,8 @@ if (!fs.existsSync(docsDir)) {
   process.exit(1);
 }
 
+const googleSiteVerification = `<meta name="google-site-verification" content="o1aP6mAxMf2S_-KBtSaitCHmRMHjIzIOe59MHzgTTbU" />`;
+
 const gtmHeadScript = `<!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -31,7 +33,10 @@ function injectGTM(filePath) {
   }
 
   if (content.includes('<head>')) {
-    content = content.replace(/<head>/, `<head>\n${gtmHeadScript}`);
+    content = content.replace(
+      /<head>/,
+      `<head>\n${gtmHeadScript}\n${googleSiteVerification}`
+    );
   }
   if (content.includes('<body>')) {
     content = content.replace(/<body>/, `<body>\n${gtmBodyScript}`);
