@@ -40,7 +40,7 @@
     "clean": "del-cli lib",
     "prepare": "bob build",
     "release": "release-it --only-version",
-    "docs": "typedoc"
+    "docs": "typedoc && node scripts/inject-gtm.js"
   },
   "keywords": [
     "react-native",
