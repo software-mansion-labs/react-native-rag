@@ -3,8 +3,12 @@ import { OPSQLiteVectorStore } from '@react-native-rag/op-sqlite';
 import {
   QWEN3_0_6B_QUANTIZED,
   ALL_MINILM_L6_V2,
+  initExecutorch,
 } from 'react-native-executorch';
+import { ExpoResourceFetcher } from 'react-native-executorch-expo-resource-fetcher';
 import { useMemo, useState } from 'react';
+
+initExecutorch({ resourceFetcher: ExpoResourceFetcher });
 import {
   ExecuTorchEmbeddings,
   ExecuTorchLLM,

@@ -2966,10 +2966,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@react-native-rag/executorch@workspace:packages/executorch"
   dependencies:
-    react-native-executorch: ^0.5.1
+    react-native-executorch: 0.8.0-nightly-48610bf-20260324
     react-native-rag: "workspace:*"
   peerDependencies:
-    react-native-executorch: ^0.5.1
+    react-native-executorch: 0.8.0-nightly-48610bf-20260324
     react-native-rag: ^0.2.0
   languageName: unknown
   linkType: soft
@@ -6916,7 +6916,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo@npm:^53.0.7, expo@npm:~53.0.9":
+"expo@npm:~53.0.9":
   version: 53.0.12
   resolution: "expo@npm:53.0.12"
   dependencies:
@@ -11401,6 +11401,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"pngjs@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "pngjs@npm:7.0.0"
+  checksum: b19a018930d27de26229c1b3ff250b3a25d09caa22cbb0b0459987d91eb0a560a18ab5d67da45a38ed7514140f26d1db58de83c31159ec101f2bb270a3c707f1
+  languageName: node
+  linkType: hard
+
 "possible-typed-array-names@npm:^1.0.0":
   version: 1.1.0
   resolution: "possible-typed-array-names@npm:1.1.0"
@@ -11746,21 +11753,32 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-executorch@npm:^0.5.1":
-  version: 0.5.1
-  resolution: "react-native-executorch@npm:0.5.1"
+"react-native-executorch-expo-resource-fetcher@npm:0.8.0-rc3-nightly-48610bf-20260324":
+  version: 0.8.0-rc3-nightly-48610bf-20260324
+  resolution: "react-native-executorch-expo-resource-fetcher@npm:0.8.0-rc3-nightly-48610bf-20260324"
+  peerDependencies:
+    expo: ">=54.0.0"
+    expo-asset: ">=12.0.0"
+    expo-file-system: ">=19.0.0"
+    react-native: "*"
+    react-native-executorch: "*"
+  checksum: d2c960872f581ccb5ab51e764e48574959e653b2de168f80de2ffc325d6d44fc58606c53329388cdac07800af4e86a5f5075b0962f3c44bc1b883c03bb10629b
+  languageName: node
+  linkType: hard
+
+"react-native-executorch@npm:0.8.0-nightly-48610bf-20260324":
+  version: 0.8.0-nightly-48610bf-20260324
+  resolution: "react-native-executorch@npm:0.8.0-nightly-48610bf-20260324"
   dependencies:
     "@huggingface/jinja": ^0.5.0
-    expo: ^53.0.7
-    expo-asset: ~11.1.5
-    expo-file-system: ~18.1.10
     jsonrepair: ^3.12.0
     jsonschema: ^1.5.0
-    zod: ^3.25.0
+    pngjs: ^7.0.0
+    zod: ^4.3.6
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 63bac8781d71b5488512a35cd96c7ff4cb63e4018bd49ce9e47a5a00f6b735269e0d09e5fe6b6207c9931cb0b667082bf769b22e859b0c069afb3b10e58f29a4
+  checksum: e7e08c00aca0c30fad6a68323be4e334d333f86907df03dd1fd510d0f8cf8f932b498e59259cb17fc9f1cc5f3eb5d25b82de8afe8abe59170b76629798db6d32
   languageName: node
   linkType: hard
 
@@ -11799,7 +11817,8 @@ __metadata:
     react-dom: 19.0.0
     react-native: 0.79.2
     react-native-builder-bob: ^0.40.11
-    react-native-executorch: ^0.5.1
+    react-native-executorch: 0.8.0-nightly-48610bf-20260324
+    react-native-executorch-expo-resource-fetcher: 0.8.0-rc3-nightly-48610bf-20260324
     react-native-monorepo-config: ^0.1.9
     react-native-rag: "workspace:*"
     react-native-safe-area-context: ^5.4.1
@@ -14396,16 +14415,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.25.0":
-  version: 3.25.76
-  resolution: "zod@npm:3.25.76"
-  checksum: c9a403a62b329188a5f6bd24d5d935d2bba345f7ab8151d1baa1505b5da9f227fb139354b043711490c798e91f3df75991395e40142e6510a4b16409f302b849
-  languageName: node
-  linkType: hard
-
 "zod@npm:^3.25.32":
   version: 3.25.67
   resolution: "zod@npm:3.25.67"
   checksum: 56ab904d33b1cd00041ce64ae05b0628fcbfeb7e707fa31cd498a97b540135e4dfe685200c9c62aea307695ee132870b4bc34f035228ea728aa75cc96a4954cb
+  languageName: node
+  linkType: hard
+
+"zod@npm:^4.3.6":
+  version: 4.3.6
+  resolution: "zod@npm:4.3.6"
+  checksum: 19cec761b46bae4b6e7e861ea740f3f248e50a6671825afc8a5758e27b35d6f20ccde9942422fd5cf6f8b697f18bd05ef8bb33f5f2db112ab25cc628de2fae47
   languageName: node
   linkType: hard
