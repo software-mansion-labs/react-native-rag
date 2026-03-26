@@ -3157,11 +3157,9 @@ __metadata:
   resolution: "@react-native-rag/executorch@workspace:packages/executorch"
   dependencies:
     react-native-executorch: ^0.8.0
-    react-native-executorch-expo-resource-fetcher: ^0.8.0
     react-native-rag: "workspace:*"
   peerDependencies:
     react-native-executorch: ^0.8.0
-    react-native-executorch-expo-resource-fetcher: ^0.8.0
     react-native-rag: ^0.8.0
   languageName: unknown
   linkType: soft
