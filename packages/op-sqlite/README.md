@@ -24,12 +24,11 @@ To enable the required features for vector search, you must add the following co
 
 ```json
 "op-sqlite": {
-  "libsql": true,
-  "sqliteVec": true
+  "libsql": true
 }
 ```
 
-This configuration ensures that the necessary `libsql` and `sqliteVec` extensions are enabled for `op-sqlite`.
+This configuration ensures that the `libsql` extension is enabled for `op-sqlite`. Note that `libsql` already includes vector search capabilities, so `sqliteVec` is not needed.
 
 ## Usage
 

@@ -27,7 +27,7 @@ interface ExecuTorchLLMParams {
  * ExecuTorch-based implementation of {@link LLM} for React Native.
  */
 export class ExecuTorchLLM implements LLM {
-  private module: LLMModule;
+  private module: LLMModule | null = null;
 
   private modelSource: ResourceSource;
   private tokenizerSource: ResourceSource;
@@ -52,12 +52,8 @@ export class ExecuTorchLLM implements LLM {
     tokenizerSource,
     tokenizerConfigSource,
     onDownloadProgress = () => {},
-    responseCallback = () => {},
     chatConfig,
   }: ExecuTorchLLMParams) {
-    this.module = new LLMModule({
-      responseCallback: responseCallback,
-    });
     this.modelSource = modelSource;
     this.tokenizerSource = tokenizerSource;
     this.tokenizerConfigSource = tokenizerConfigSource;
@@ -71,15 +67,13 @@ export class ExecuTorchLLM implements LLM {
    */
   async load() {
     if (!this.isLoaded) {
-      await this.module.load(
-        {
-          modelSource: this.modelSource,
-          tokenizerSource: this.tokenizerSource,
-          tokenizerConfigSource: this.tokenizerConfigSource,
-        },
+      this.module = await LLMModule.fromCustomModel(
+        this.modelSource,
+        this.tokenizerSource,
+        this.tokenizerConfigSource,
         this.onDownloadProgress
       );
-      this.module.configure({
+      this.module!.configure({
         chatConfig: this.chatConfig,
       });
       this.isLoaded = true;
@@ -96,7 +90,7 @@ export class ExecuTorchLLM implements LLM {
     console.warn(
       'This function will call a synchronous interrupt on the instance of LLMModule from React Native ExecuTorch. Awaiting this method will not guarantee completion. This may change in future versions to support async interrupt.'
     );
-    this.module.interrupt();
+    this.module?.interrupt();
   }
 
   /**
@@ -108,7 +102,8 @@ export class ExecuTorchLLM implements LLM {
     console.warn(
       'This function will call a synchronous unload on the instance of LLMModule from React Native ExecuTorch. Awaiting this method will not guarantee completion. This may change in future versions to support async unload.'
     );
-    this.module.delete();
+    this.module?.delete();
+    this.module = null;
     this.isLoaded = false;
   }
 
@@ -119,6 +114,9 @@ export class ExecuTorchLLM implements LLM {
    * @returns Promise that resolves to the full generated string.
    */
   async generate(messages: Message[], callback: (token: string) => void) {
+    if (!this.module) {
+      throw new Error('LLMModule not loaded. Call load() first.');
+    }
     this.module.setTokenCallback({ tokenCallback: callback });
     return this.module.generate(messages);
   }

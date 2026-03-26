@@ -17,7 +17,7 @@ interface ExecuTorchEmbeddingsParams {
  * ExecuTorch-based implementation of {@link Embeddings} for React Native.
  */
 export class ExecuTorchEmbeddings implements Embeddings {
-  private module: TextEmbeddingsModule;
+  private module: TextEmbeddingsModule | null = null;
   private modelSource: ResourceSource;
   private tokenizerSource: ResourceSource;
   private onDownloadProgress: (progress: number) => void;
@@ -36,7 +36,6 @@ export class ExecuTorchEmbeddings implements Embeddings {
     tokenizerSource,
     onDownloadProgress = () => {},
   }: ExecuTorchEmbeddingsParams) {
-    this.module = new TextEmbeddingsModule();
     this.modelSource = modelSource;
     this.tokenizerSource = tokenizerSource;
     this.onDownloadProgress = onDownloadProgress;
@@ -48,11 +47,9 @@ export class ExecuTorchEmbeddings implements Embeddings {
    */
   async load() {
     if (!this.isLoaded) {
-      await this.module.load(
-        {
-          modelSource: this.modelSource,
-          tokenizerSource: this.tokenizerSource,
-        },
+      this.module = await TextEmbeddingsModule.fromCustomModel(
+        this.modelSource,
+        this.tokenizerSource,
         this.onDownloadProgress
       );
       this.isLoaded = true;
@@ -69,7 +66,8 @@ export class ExecuTorchEmbeddings implements Embeddings {
     console.warn(
       'This function will call a synchronous unload on the instance of TextEmbeddingsModule from React Native ExecuTorch. Awaiting this method will not guarantee completion. This may change in future versions to support async unload.'
     );
-    this.module.delete();
+    this.module?.delete();
+    this.module = null;
     this.isLoaded = false;
   }
 
@@ -79,6 +77,9 @@ export class ExecuTorchEmbeddings implements Embeddings {
    * @returns Promise that resolves to the embedding vector.
    */
   async embed(text: string): Promise<number[]> {
+    if (!this.module) {
+      throw new Error('TextEmbeddingsModule not loaded. Call load() first.');
+    }
     return Array.from(await this.module.forward(text));
   }
 }
