@@ -6,13 +6,13 @@ import {
   initExecutorch,
 } from 'react-native-executorch';
 import { ExpoResourceFetcher } from 'react-native-executorch-expo-resource-fetcher';
-import { useMemo, useState } from 'react';
-
-initExecutorch({ resourceFetcher: ExpoResourceFetcher });
 import {
   ExecuTorchEmbeddings,
   ExecuTorchLLM,
 } from '@react-native-rag/executorch';
+import { useMemo, useState } from 'react';
+
+initExecutorch({ resourceFetcher: ExpoResourceFetcher });
 import {
   KeyboardAvoidingView,
   Text,

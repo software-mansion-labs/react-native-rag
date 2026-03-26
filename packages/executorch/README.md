@@ -8,6 +8,15 @@ This package provides implementations for the `Embeddings` and `LLM` interfaces 
 npm install @react-native-rag/executorch react-native-executorch
 ```
 
+You also need to install a resource fetcher for your setup (e.g. `react-native-executorch-expo-resource-fetcher` for Expo projects) and call `initExecutorch` in your app before using any ExecuTorch modules:
+
+```typescript
+import { initExecutorch } from 'react-native-executorch';
+import { ExpoResourceFetcher } from 'react-native-executorch-expo-resource-fetcher';
+
+initExecutorch({ resourceFetcher: ExpoResourceFetcher });
+```
+
 ## Usage
 
 ### `ExecuTorchEmbeddings`
