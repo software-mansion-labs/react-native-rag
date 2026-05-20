@@ -7,6 +7,15 @@
   },
   "license": "MIT",
   "description": "React Native ExecuTorch wrapper for React Native RAG",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/software-mansion-labs/react-native-rag.git",
+    "directory": "packages/executorch"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "peerDependencies": {
     "react-native-executorch": "^0.8.0",
     "react-native-rag": "^0.8.0"
