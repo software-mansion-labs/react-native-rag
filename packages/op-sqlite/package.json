@@ -7,6 +7,15 @@
   },
   "license": "MIT",
   "description": "OP-SQLite wrapper for React Native RAG",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/software-mansion-labs/react-native-rag.git",
+    "directory": "packages/op-sqlite"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "peerDependencies": {
     "@op-engineering/op-sqlite": "^15.2.7",
     "react-native-rag": "^0.8.0"

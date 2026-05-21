@@ -1,0 +1,89 @@
+name: Publish to npm
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: Package to publish.
+        type: choice
+        options:
+          - react-native-rag
+          - '@react-native-rag/executorch'
+          - '@react-native-rag/op-sqlite'
+        required: true
+      release-type:
+        description: Type of release to publish.
+        type: choice
+        options: [stable, nightly, beta, alpha, rc]
+        default: stable
+      version:
+        description: Explicit version in x.y.z format (leave empty to infer automatically).
+        type: string
+        required: false
+        default: ''
+      perform-git-operations:
+        description: Create and push the release commit + tag.
+        type: boolean
+        default: false
+      dry-run:
+        description: Dry run — no actual publish or git push.
+        type: boolean
+        default: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      id-token: write
+
+    concurrency:
+      group: publish-${{ inputs.package }}-${{ github.ref }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org/
+
+      - name: Publish react-native-rag
+        if: ${{ inputs.package == 'react-native-rag' }}
+        uses: software-mansion/npm-package-publish@22b6e632b4310c5c061a047bccc99d0cea88d2bb
+        with:
+          package-name: 'react-native-rag'
+          package-json-path: 'package.json'
+          install-dependencies-command: 'yarn install --immutable'
+          release-type: ${{ inputs.release-type }}
+          version: ${{ inputs.version }}
+          perform-git-operations: ${{ inputs.perform-git-operations }}
+          dry-run: ${{ inputs.dry-run }}
+
+      - name: Publish @react-native-rag/executorch
+        if: ${{ inputs.package == '@react-native-rag/executorch' }}
+        uses: software-mansion/npm-package-publish@22b6e632b4310c5c061a047bccc99d0cea88d2bb
+        with:
+          package-name: '@react-native-rag/executorch'
+          package-json-path: 'packages/executorch/package.json'
+          install-dependencies-command: 'yarn install --immutable'
+          release-type: ${{ inputs.release-type }}
+          version: ${{ inputs.version }}
+          perform-git-operations: ${{ inputs.perform-git-operations }}
+          dry-run: ${{ inputs.dry-run }}
+
+      - name: Publish @react-native-rag/op-sqlite
+        if: ${{ inputs.package == '@react-native-rag/op-sqlite' }}
+        uses: software-mansion/npm-package-publish@22b6e632b4310c5c061a047bccc99d0cea88d2bb
+        with:
+          package-name: '@react-native-rag/op-sqlite'
+          package-json-path: 'packages/op-sqlite/package.json'
+          install-dependencies-command: 'yarn install --immutable'
+          release-type: ${{ inputs.release-type }}
+          version: ${{ inputs.version }}
+          perform-git-operations: ${{ inputs.perform-git-operations }}
+          dry-run: ${{ inputs.dry-run }}

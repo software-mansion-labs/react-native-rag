@@ -61,6 +61,7 @@
   },
   "homepage": "https://github.com/software-mansion-labs/react-native-rag#readme",
   "publishConfig": {
+    "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
