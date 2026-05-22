@@ -3159,7 +3159,7 @@ __metadata:
     react-native-executorch: 0.9.0-nightly-7b452e6-20260522
     react-native-rag: "workspace:*"
   peerDependencies:
-    react-native-executorch: ^0.9.0
+    react-native-executorch: 0.9.0-nightly-7b452e6-20260522
     react-native-rag: ^0.9.0
   languageName: unknown
   linkType: soft
