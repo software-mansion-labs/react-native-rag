@@ -1,6 +1,6 @@
 {
   "name": "@react-native-rag/executorch",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "main": "src/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -17,11 +17,11 @@
     "registry": "https://registry.npmjs.org/"
   },
   "peerDependencies": {
-    "react-native-executorch": "^0.8.0",
-    "react-native-rag": "^0.8.0"
+    "react-native-executorch": "^0.9.0",
+    "react-native-rag": "^0.9.0"
   },
   "devDependencies": {
-    "react-native-executorch": "^0.8.0",
+    "react-native-executorch": "^0.9.0",
     "react-native-rag": "workspace:*"
   }
 }

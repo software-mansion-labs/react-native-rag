@@ -1,6 +1,6 @@
 {
   "name": "react-native-rag",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "Private, local RAGs. Supercharge LLMs with your own knowledge base.",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",

@@ -24,13 +24,12 @@ initExecutorch({ resourceFetcher: ExpoResourceFetcher });
 This class allows you to use an ExecuTorch-compatible model to generate text embeddings.
 
 ```typescript
-import { ALL_MINILM_L6_V2, ALL_MINILM_L6_V2_TOKENIZER } from 'react-native-executorch';
+import { models } from 'react-native-executorch';
 import { ExecuTorchEmbeddings } from '@react-native-rag/executorch';
 
-const embeddings = new ExecuTorchEmbeddings({
-  modelSource: ALL_MINILM_L6_V2,
-  tokenizerSource: ALL_MINILM_L6_V2_TOKENIZER,
-});
+const embeddings = new ExecuTorchEmbeddings(
+  models.text_embedding.all_minilm_l6_v2()
+);
 ```
 
 ### `ExecuTorchLLM`
@@ -38,18 +37,10 @@ const embeddings = new ExecuTorchEmbeddings({
 This class allows you to use an ExecuTorch-compatible language model for text generation.
 
 ```typescript
-import {
-  LLAMA3_2_1B,
-  LLAMA3_2_TOKENIZER,
-  LLAMA3_2_TOKENIZER_CONFIG,
-} from 'react-native-executorch';
+import { models } from 'react-native-executorch';
 import { ExecuTorchLLM } from '@react-native-rag/executorch';
 
-const llm = new ExecuTorchLLM({
-  modelSource: LLAMA3_2_1B,
-  tokenizerSource: LLAMA3_2_TOKENIZER,
-  tokenizerConfigSource: LLAMA3_2_TOKENIZER_CONFIG,
-});
+const llm = new ExecuTorchLLM(models.llm.lfm2_5_1_2b_instruct());
 ```
 
 ### Integration with `react-native-rag`

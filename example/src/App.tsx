@@ -1,10 +1,6 @@
 import { type Message, useRAG } from 'react-native-rag';
 import { OPSQLiteVectorStore } from '@react-native-rag/op-sqlite';
-import {
-  QWEN3_0_6B_QUANTIZED,
-  ALL_MINILM_L6_V2,
-  initExecutorch,
-} from 'react-native-executorch';
+import { initExecutorch, models } from 'react-native-executorch';
 import { ExpoResourceFetcher } from 'react-native-executorch-expo-resource-fetcher';
 import {
   ExecuTorchEmbeddings,
@@ -39,13 +35,15 @@ export default function App() {
   const vectorStore = useMemo(() => {
     return new OPSQLiteVectorStore({
       name: 'rag_example_db1',
-      embeddings: new ExecuTorchEmbeddings(ALL_MINILM_L6_V2),
+      embeddings: new ExecuTorchEmbeddings(
+        models.text_embedding.all_minilm_l6_v2()
+      ),
     });
   }, []);
 
   const llm = useMemo(() => {
     return new ExecuTorchLLM({
-      ...QWEN3_0_6B_QUANTIZED,
+      ...models.llm.qwen3_0_6b(),
       onDownloadProgress: setDownloadProgress,
     });
   }, []);

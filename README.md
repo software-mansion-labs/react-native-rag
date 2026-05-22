@@ -65,30 +65,19 @@ import React from 'react';
 import { Text } from 'react-native';
 
 import { useRAG, MemoryVectorStore } from 'react-native-rag';
-import {
-  ALL_MINILM_L6_V2,
-  ALL_MINILM_L6_V2_TOKENIZER,
-  LLAMA3_2_1B_QLORA,
-  LLAMA3_2_1B_TOKENIZER,
-  LLAMA3_2_TOKENIZER_CONFIG,
-} from 'react-native-executorch';
+import { models } from 'react-native-executorch';
 import {
   ExecuTorchEmbeddings,
   ExecuTorchLLM,
 } from '@react-native-rag/executorch';
 
 const vectorStore = new MemoryVectorStore({
-  embeddings: new ExecuTorchEmbeddings({
-    modelSource: ALL_MINILM_L6_V2,
-    tokenizerSource: ALL_MINILM_L6_V2_TOKENIZER,
-  }),
+  embeddings: new ExecuTorchEmbeddings(
+    models.text_embedding.all_minilm_l6_v2()
+  ),
 });
 
-const llm = new ExecuTorchLLM({
-  modelSource: LLAMA3_2_1B_QLORA,
-  tokenizerSource: LLAMA3_2_1B_TOKENIZER,
-  tokenizerConfigSource: LLAMA3_2_TOKENIZER_CONFIG,
-});
+const llm = new ExecuTorchLLM(models.llm.lfm2_5_1_2b_instruct());
 
 const App = () => {
   const rag = useRAG({ vectorStore, llm });
@@ -109,13 +98,7 @@ import {
   ExecuTorchEmbeddings,
   ExecuTorchLLM,
 } from '@react-native-rag/executorch';
-import {
-  ALL_MINILM_L6_V2,
-  ALL_MINILM_L6_V2_TOKENIZER,
-  LLAMA3_2_1B_QLORA,
-  LLAMA3_2_1B_TOKENIZER,
-  LLAMA3_2_TOKENIZER_CONFIG,
-} from 'react-native-executorch';
+import { models } from 'react-native-executorch';
 
 const App = () => {
   const [rag, setRag] = useState<RAG | null>(null);
@@ -123,15 +106,12 @@ const App = () => {
 
   useEffect(() => {
     const initializeRAG = async () => {
-      const embeddings = new ExecuTorchEmbeddings({
-        modelSource: ALL_MINILM_L6_V2,
-        tokenizerSource: ALL_MINILM_L6_V2_TOKENIZER,
-      });
+      const embeddings = new ExecuTorchEmbeddings(
+        models.text_embedding.all_minilm_l6_v2()
+      );
 
       const llm = new ExecuTorchLLM({
-        modelSource: LLAMA3_2_1B_QLORA,
-        tokenizerSource: LLAMA3_2_1B_TOKENIZER,
-        tokenizerConfigSource: LLAMA3_2_TOKENIZER_CONFIG,
+        ...models.llm.lfm2_5_1_2b_instruct(),
         responseCallback: setResponse,
       });
 
@@ -163,13 +143,7 @@ import {
   ExecuTorchEmbeddings,
   ExecuTorchLLM,
 } from '@react-native-rag/executorch';
-import {
-  ALL_MINILM_L6_V2,
-  ALL_MINILM_L6_V2_TOKENIZER,
-  LLAMA3_2_1B_QLORA,
-  LLAMA3_2_1B_TOKENIZER,
-  LLAMA3_2_TOKENIZER_CONFIG,
-} from 'react-native-executorch';
+import { models } from 'react-native-executorch';
 
 const App = () => {
   const [embeddings, setEmbeddings] = useState<ExecuTorchEmbeddings | null>(null);
@@ -182,16 +156,13 @@ const App = () => {
       // Instantiate and load the Embeddings Model
       // NOTE: Calling load on VectorStore will automatically load the embeddings model
       // so loading the embeddings model separately is not necessary in this case.
-      const embeddings = await new ExecuTorchEmbeddings({
-        modelSource: ALL_MINILM_L6_V2,
-        tokenizerSource: ALL_MINILM_L6_V2_TOKENIZER,
-      }).load();
+      const embeddings = await new ExecuTorchEmbeddings(
+        models.text_embedding.all_minilm_l6_v2()
+      ).load();
 
       // Instantiate and load the Large Language Model
       const llm = await new ExecuTorchLLM({
-        modelSource: LLAMA3_2_1B_QLORA,
-        tokenizerSource: LLAMA3_2_1B_TOKENIZER,
-        tokenizerConfigSource: LLAMA3_2_TOKENIZER_CONFIG,
+        ...models.llm.lfm2_5_1_2b_instruct(),
         responseCallback: setResponse,
       }).load();
 

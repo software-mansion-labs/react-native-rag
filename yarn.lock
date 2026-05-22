@@ -3156,11 +3156,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@react-native-rag/executorch@workspace:packages/executorch"
   dependencies:
-    react-native-executorch: ^0.8.0
+    react-native-executorch: 0.9.0-nightly-7b452e6-20260522
     react-native-rag: "workspace:*"
   peerDependencies:
-    react-native-executorch: ^0.8.0
-    react-native-rag: ^0.8.0
+    react-native-executorch: ^0.9.0
+    react-native-rag: ^0.9.0
   languageName: unknown
   linkType: soft
 
@@ -3172,7 +3172,7 @@ __metadata:
     react-native-rag: "workspace:*"
   peerDependencies:
     "@op-engineering/op-sqlite": ^15.2.7
-    react-native-rag: ^0.8.0
+    react-native-rag: ^0.9.0
   languageName: unknown
   linkType: soft
 
@@ -11893,22 +11893,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-executorch-expo-resource-fetcher@npm:^0.8.0":
-  version: 0.8.0
-  resolution: "react-native-executorch-expo-resource-fetcher@npm:0.8.0"
+"react-native-executorch-expo-resource-fetcher@npm:0.9.0-nightly-7b452e6-20260522":
+  version: 0.9.0-nightly-7b452e6-20260522
+  resolution: "react-native-executorch-expo-resource-fetcher@npm:0.9.0-nightly-7b452e6-20260522"
   peerDependencies:
     expo: ">=54.0.0"
     expo-asset: ">=12.0.0"
     expo-file-system: ">=19.0.0"
     react-native: "*"
     react-native-executorch: "*"
-  checksum: 3ea4d1059e4cde913009bb4d6c5dd76fad27e5c1992538ebb5f65823ca349c11caad1d8209528b1f8ee5e4a438fd9bc923a61dd3f9d8feffd9ae6e3088da9cc7
+  checksum: 6fe6e1cf9b82510b7a51c4102ad08d1f3a0a648addda1fbe758dc8149e9dd405258c37508855163f4ff76bba5e3099f3fae8334f86d04cffe4a7d537cef07d0c
   languageName: node
   linkType: hard
 
-"react-native-executorch@npm:^0.8.0":
-  version: 0.8.0
-  resolution: "react-native-executorch@npm:0.8.0"
+"react-native-executorch@npm:0.9.0-nightly-7b452e6-20260522":
+  version: 0.9.0-nightly-7b452e6-20260522
+  resolution: "react-native-executorch@npm:0.9.0-nightly-7b452e6-20260522"
   dependencies:
     "@huggingface/jinja": ^0.5.0
     jsonrepair: ^3.12.0
@@ -11918,7 +11918,7 @@ __metadata:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 433a287be101ee6883d571cd77c54181606a7935fc4b596207e6773e3cf1967932c6d225520defb13111f4cf50da771830fcccced3d98c5096e41549941474ae
+  checksum: 80cc7c2a942562f430c765e00ca1e80abaa68f147e12d6b42b05d9114a142d5b1201b135fdcd74fd0b47d22123c58eceb99ae8ed42d4e41f3af45ed90421259d
   languageName: node
   linkType: hard
 
@@ -11959,8 +11959,8 @@ __metadata:
     react-dom: 19.2.0
     react-native: 0.83.2
     react-native-builder-bob: ^0.40.11
-    react-native-executorch: ^0.8.0
-    react-native-executorch-expo-resource-fetcher: ^0.8.0
+    react-native-executorch: 0.9.0-nightly-7b452e6-20260522
+    react-native-executorch-expo-resource-fetcher: 0.9.0-nightly-7b452e6-20260522
     react-native-monorepo-config: ^0.1.9
     react-native-rag: "workspace:*"
     react-native-safe-area-context: ~5.6.2
