@@ -37,14 +37,20 @@ To use `OPSQLiteVectorStore`, you need to instantiate it with an `Embeddings` im
 ```typescript
 import { useRAG } from 'react-native-rag';
 import { OPSQLiteVectorStore } from '@react-native-rag/op-sqlite';
-import { YourLLM, YourEmbeddings } from './your-implementations'; // Provide your own LLM and Embeddings
+import {
+  ExecuTorchEmbeddings,
+  ExecuTorchLLM,
+} from '@react-native-rag/executorch';
+import { models } from 'react-native-executorch';
 
 const App = () => {
   const { isReady, generate, addDocument } = useRAG({
-    llm: new YourLLM(),
+    llm: new ExecuTorchLLM(models.llm.lfm2_5_1_2b_instruct()),
     vectorStore: new OPSQLiteVectorStore({
       name: 'my-vector-db',
-      embeddings: new YourEmbeddings(),
+      embeddings: new ExecuTorchEmbeddings(
+        models.text_embedding.all_minilm_l6_v2()
+      ),
     }),
   });
 
