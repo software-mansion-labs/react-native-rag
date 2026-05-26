@@ -2,6 +2,10 @@
   "name": "@react-native-rag/op-sqlite",
   "version": "0.9.0",
   "main": "src/index.ts",
+  "files": [
+    "src",
+    "README.md"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
