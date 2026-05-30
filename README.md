@@ -2,6 +2,10 @@
 
 ![header](https://github.com/user-attachments/assets/dc07a506-0248-4115-9371-e0d10e6c8792)
 
+[![Ad](https://swm-delivery.com/www/images/zone-gh-react-native-rag-1?n=1)](https://swm-delivery.com/www/delivery/ck.php?zoneid=zone-gh-react-native-rag-1&n=1)
+[![Ad](https://swm-delivery.com/www/images/zone-gh-react-native-rag-2?n=1)](https://swm-delivery.com/www/delivery/ck.php?zoneid=zone-gh-react-native-rag-2&n=1)
+[![Ad](https://swm-delivery.com/www/images/zone-gh-react-native-rag-3?n=1)](https://swm-delivery.com/www/delivery/ck.php?zoneid=zone-gh-react-native-rag-3&n=1)
+
 Private, local RAGs. Supercharge LLMs with your own knowledge base.
 
 ## Navigation
