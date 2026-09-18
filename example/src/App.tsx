@@ -41,6 +41,8 @@ export default function App() {
   const llm = useMemo(() => {
     return new ExecuTorchLLM({
       ...models.llm.QWEN3_0_6B.DEFAULT,
+      // Qwen sometimes emits its pad token and keeps going instead of ending the turn.
+      stopRegex: /<\|endoftext\|>/,
       onDownloadProgress: setDownloadProgress,
     });
   }, []);

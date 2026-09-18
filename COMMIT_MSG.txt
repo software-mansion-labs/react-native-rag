@@ -1,0 +1,22 @@
+fix(executorch): restore LLM safeguards lost in the RNE 0.10 migration
+
+The 0.10 wrapper drives the low-level LLMRunner directly and lost a few
+behaviours that react-native-executorch 0.9 (or its 0.10 chat session)
+provided. Restore them:
+
+- add `stopRegex` to cut generation when a model runs past its end of
+  turn (e.g. Qwen emitting `<|endoftext|>` followed by made-up turns);
+  the matched text is neither streamed nor returned
+- drop the oldest non-system turns when the rendered history does not
+  fit the model's context window, using the runner's `maxSeqLen` and the
+  model tokenizer; replaces the 0.9 sliding window context strategy and
+  fixes `Error::InvalidArgument` on long conversations
+- add `systemPrompt`, defaulting to the prompt 0.9 injected, applied only
+  when the history has no system message; pass '' to disable
+- own the preprocessor, tokenizer and runner through `createResourceScope`
+  so a failed `load()` releases what was already created and can be retried
+- reset the runner's KV cache after a failed generation without masking
+  the original error
+
+Use `stopRegex` in the example app, document the new parameters and
+behaviour in the package README, and cover all of the above with tests.
