@@ -1,14 +1,21 @@
-import type { Embeddings, ResourceSource } from 'react-native-rag';
-import { TextEmbeddingsModule } from 'react-native-executorch';
+import type { Embeddings } from 'react-native-rag';
+import {
+  createTextEmbedder,
+  download,
+  type TextEmbedder,
+  type TextEmbedderModel,
+} from 'react-native-executorch';
 
 /**
  * Parameters for {@link ExecuTorchEmbeddings}.
  */
 interface ExecuTorchEmbeddingsParams {
-  /** Source of the ExecuTorch embedding model. */
-  modelSource: ResourceSource;
-  /** Source of the tokenizer model. */
-  tokenizerSource: ResourceSource;
+  /** Path or URL of the ExecuTorch embedding model (`.pte`). */
+  modelPath: string;
+  /** Path or URL of the tokenizer (`tokenizer.json`). */
+  tokenizerPath: string;
+  /** Optional prompt prepended to every input before embedding. */
+  defaultPrompt?: string;
   /** Download progress callback (0-1). */
   onDownloadProgress?: (progress: number) => void;
 }
@@ -17,58 +24,48 @@ interface ExecuTorchEmbeddingsParams {
  * ExecuTorch-based implementation of {@link Embeddings} for React Native.
  */
 export class ExecuTorchEmbeddings implements Embeddings {
-  private module: TextEmbeddingsModule | null = null;
-  private modelSource: ResourceSource;
-  private tokenizerSource: ResourceSource;
+  private embedder: TextEmbedder | null = null;
+  private model: TextEmbedderModel;
   private onDownloadProgress: (progress: number) => void;
-
-  private isLoaded = false;
 
   /**
    * Creates a new ExecuTorch embeddings instance.
    * @param params - Parameters for the instance.
-   * @param params.modelSource - Source of the embedding model.
-   * @param params.tokenizerSource - Source of the tokenizer.
+   * @param params.modelPath - Path or URL of the embedding model.
+   * @param params.tokenizerPath - Path or URL of the tokenizer.
+   * @param params.defaultPrompt - Optional prompt prepended to every input.
    * @param params.onDownloadProgress - Download progress callback (0-1).
    */
   constructor({
-    modelSource,
-    tokenizerSource,
+    modelPath,
+    tokenizerPath,
+    defaultPrompt,
     onDownloadProgress = () => {},
   }: ExecuTorchEmbeddingsParams) {
-    this.modelSource = modelSource;
-    this.tokenizerSource = tokenizerSource;
+    this.model = { modelPath, tokenizerPath, defaultPrompt };
     this.onDownloadProgress = onDownloadProgress;
   }
 
   /**
-   * Loads model and tokenizer via `react-native-executorch`.
+   * Downloads (if needed) and loads the model and tokenizer via `react-native-executorch`.
    * @returns Promise that resolves to the same instance.
    */
   async load() {
-    if (!this.isLoaded) {
-      this.module = await TextEmbeddingsModule.fromCustomModel(
-        this.modelSource,
-        this.tokenizerSource,
-        this.onDownloadProgress
-      );
-      this.isLoaded = true;
+    if (!this.embedder) {
+      const resolved = await download(this.model, {
+        onProgress: this.onDownloadProgress,
+      });
+      this.embedder = await createTextEmbedder(resolved);
     }
     return this;
   }
 
   /**
-   * Unloads the underlying module.
-   * Note: current ExecuTorch unload is synchronous.
-   * Awaiting this method will not guarantee completion.
+   * Unloads the underlying model and releases its native resources.
    */
   async unload() {
-    console.warn(
-      'This function will call a synchronous unload on the instance of TextEmbeddingsModule from React Native ExecuTorch. Awaiting this method will not guarantee completion. This may change in future versions to support async unload.'
-    );
-    this.module?.delete();
-    this.module = null;
-    this.isLoaded = false;
+    this.embedder?.dispose();
+    this.embedder = null;
   }
 
   /**
@@ -77,9 +74,9 @@ export class ExecuTorchEmbeddings implements Embeddings {
    * @returns Promise that resolves to the embedding vector.
    */
   async embed(text: string): Promise<number[]> {
-    if (!this.module) {
-      throw new Error('TextEmbeddingsModule not loaded. Call load() first.');
+    if (!this.embedder) {
+      throw new Error('Text embedder not loaded. Call load() first.');
     }
-    return Array.from(await this.module.forward(text));
+    return Array.from(await this.embedder.embed(text));
   }
 }

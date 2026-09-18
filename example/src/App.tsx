@@ -1,14 +1,11 @@
 import { type Message, useRAG } from 'react-native-rag';
 import { OPSQLiteVectorStore } from '@react-native-rag/op-sqlite';
-import { initExecutorch, models } from 'react-native-executorch';
-import { ExpoResourceFetcher } from 'react-native-executorch-expo-resource-fetcher';
+import { models } from 'react-native-executorch';
 import {
   ExecuTorchEmbeddings,
   ExecuTorchLLM,
 } from '@react-native-rag/executorch';
 import { useMemo, useState } from 'react';
-
-initExecutorch({ resourceFetcher: ExpoResourceFetcher });
 import {
   KeyboardAvoidingView,
   Text,
@@ -36,14 +33,16 @@ export default function App() {
     return new OPSQLiteVectorStore({
       name: 'rag_example_db1',
       embeddings: new ExecuTorchEmbeddings(
-        models.text_embedding.all_minilm_l6_v2()
+        models.textEmbeddings.ALL_MINILM_L6_V2.DEFAULT
       ),
     });
   }, []);
 
   const llm = useMemo(() => {
     return new ExecuTorchLLM({
-      ...models.llm.qwen3_0_6b(),
+      ...models.llm.QWEN3_0_6B.DEFAULT,
+      // Qwen sometimes emits its pad token and keeps going instead of ending the turn.
+      stopRegex: /<\|endoftext\|>/,
       onDownloadProgress: setDownloadProgress,
     });
   }, []);
