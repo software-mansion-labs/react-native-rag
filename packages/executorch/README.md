@@ -74,9 +74,22 @@ Parameters:
 | `tokenizerPath`       | `string`                     | URL or local path of the tokenizer (`tokenizer.json`).                      |
 | `tokenizerConfigPath` | `string`                     | URL or local path of the tokenizer config (`tokenizer_config.json`).        |
 | `generationConfig`    | `LLMGenerationConfig`        | `temperature`, `maxNewTokens`, `ignoreEos`. See `react-native-executorch`.  |
+| `systemPrompt`        | `string` (optional)          | Prepended when the history has no `system` message. Defaults to `DEFAULT_SYSTEM_PROMPT`; pass `''` to disable. |
+| `stopRegex`           | `RegExp` (optional)          | Stops generation as soon as the response matches; the match is cut from the result. |
 | `onDownloadProgress`  | `(progress: number) => void` | Download progress callback in the `0-1` range.                              |
 
 Each `generate()` call is stateless: the whole message history is rendered through the model's chat template and fed to the model from a fresh KV cache. The model itself is loaded once by `load()` and kept in memory until `unload()`.
+
+When the history does not fit the model's context window, the oldest turns are dropped until the prompt leaves room for the response (`generationConfig.maxNewTokens`, or 512 tokens when unset). System messages and the last message are always kept.
+
+Some models run past their end of turn, for example Qwen 3 can emit `<|endoftext|>` and continue with made-up turns. Pass a `stopRegex` to cut generation there:
+
+```typescript
+const llm = new ExecuTorchLLM({
+  ...models.llm.QWEN3_0_6B.DEFAULT,
+  stopRegex: /<\|endoftext\|>/,
+});
+```
 
 ### Choosing a backend
 
@@ -118,7 +131,7 @@ const App = () => {
 - Install `react-native-worklets` and `react-native-blob-util`. Remove `react-native-executorch-expo-resource-fetcher` (or the bare fetcher) and the `initExecutorch(...)` call.
 - Model registry accessors changed in `react-native-executorch`: `models.text_embedding.all_minilm_l6_v2()` is now `models.textEmbeddings.ALL_MINILM_L6_V2.DEFAULT`, and `models.llm.qwen3_0_6b()` is now `models.llm.QWEN3_0_6B.DEFAULT`.
 - Constructor fields follow the new registry shape: `modelSource`, `tokenizerSource` and `tokenizerConfigSource` are now `modelPath`, `tokenizerPath` and `tokenizerConfigPath`, and only accept strings (URLs or local paths).
-- `chatConfig` on `ExecuTorchLLM` is now `generationConfig` with the `react-native-executorch` `LLMGenerationConfig` shape. Put a system prompt in the message history instead, as the first message with `role: 'system'`.
+- `chatConfig` on `ExecuTorchLLM` is now `generationConfig` with the `react-native-executorch` `LLMGenerationConfig` shape. `chatConfig.systemPrompt` is now the top-level `systemPrompt` parameter (a `system` message in the history takes precedence). `chatConfig.contextStrategy` is gone: the oldest turns are dropped automatically when the history does not fit the context window.
 - The `responseCallback` and `messageHistoryCallback` parameters were removed. They were never wired up. Use the token callback passed to `generate()`.
 - Minimum iOS version is now 17.0.
 
