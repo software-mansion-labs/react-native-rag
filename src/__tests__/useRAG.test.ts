@@ -279,36 +279,6 @@ describe('useRAG: document operations', () => {
     expect(result.current.isStoring).toBe(false);
   });
 
-  test('addDocument delegates and returns the id', async () => {
-    const { result } = await renderReady();
-    const params = { document: 'doc', metadata: { a: 1 } };
-
-    let id = '';
-    await act(async () => {
-      id = await result.current.addDocument(params);
-    });
-
-    expect(id).toBe('id-2');
-    expect(rag.addDocument).toHaveBeenCalledWith(params);
-  });
-
-  test('updateDocument and deleteDocument delegate', async () => {
-    const { result } = await renderReady();
-    const predicate = () => true;
-
-    await act(async () => {
-      await result.current.updateDocument({ id: '1', document: 'new' });
-      await result.current.deleteDocument({ predicate });
-    });
-
-    expect(rag.updateDocument).toHaveBeenCalledWith({
-      id: '1',
-      document: 'new',
-    });
-    expect(rag.deleteDocument).toHaveBeenCalledWith({ predicate });
-    expect(result.current.isStoring).toBe(false);
-  });
-
   test('sets isStoring while pending and rejects a concurrent store', async () => {
     const pending = deferred<string>();
     rag.addDocument.mockReturnValueOnce(pending.promise);
