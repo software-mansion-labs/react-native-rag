@@ -2,6 +2,11 @@
   "name": "@react-native-rag/executorch",
   "version": "0.10.2",
   "main": "src/index.ts",
+  "files": [
+    "src",
+    "README.md",
+    "!**/__tests__"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

@@ -35,9 +35,11 @@ interface ExecuTorchLLMParams extends LLMModel {
    */
   systemPrompt?: string;
   /**
-   * Stops generation as soon as the response matches. The matched text is cut from
-   * the returned response. Useful for models that run past their end of turn,
-   * e.g. `/<\|endoftext\|>/` for Qwen.
+   * Stops generation as soon as the accumulated response matches. The matched text is
+   * cut from the returned response. Tokens are streamed to the callback before the
+   * check, so a pattern spanning several tokens may reach the callback partially;
+   * single-token stops are cut cleanly from both. Useful for models that run past
+   * their end of turn, e.g. `/<\|endoftext\|>/` for Qwen.
    */
   stopRegex?: RegExp;
 }

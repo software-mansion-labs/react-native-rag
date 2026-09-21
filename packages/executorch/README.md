@@ -12,16 +12,22 @@ npm install @react-native-rag/executorch react-native-executorch react-native-wo
 
 Requirements inherited from `react-native-executorch` 0.10:
 
-- React Native 0.83+ (bare) or Expo SDK 55+ with development builds. Expo Go is not supported.
+- React Native 0.83+ (bare) or Expo SDK 55+ with development builds. Expo Go is not supported. The upper bound comes from `react-native-worklets`: 0.10.x and 0.11.x support React Native 0.83 to 0.86, 0.12.x up to 0.87.
 - The New Architecture enabled.
 - iOS 17.0+ and Android 13+ (`minSdkVersion` 26+).
+- Optional, Android only: `@kesha-antonov/react-native-background-downloader` (4.4.0+) lets model downloads continue in the background. Without it downloads use the system `DownloadManager`.
 
-With Expo, set the iOS deployment target through [`expo-build-properties`](https://docs.expo.dev/versions/latest/sdk/build-properties/):
+With Expo, set the iOS deployment target and the Android `minSdkVersion` through [`expo-build-properties`](https://docs.expo.dev/versions/latest/sdk/build-properties/) (Expo defaults to `minSdkVersion` 24):
 
 ```json
 {
   "expo": {
-    "plugins": [["expo-build-properties", { "ios": { "deploymentTarget": "17.0" } }]]
+    "plugins": [
+      [
+        "expo-build-properties",
+        { "ios": { "deploymentTarget": "17.0" }, "android": { "minSdkVersion": 26 } }
+      ]
+    ]
   }
 }
 ```
@@ -87,6 +93,19 @@ Some models run past their end of turn, for example Qwen 3 can emit `<|endoftext
 ```typescript
 const llm = new ExecuTorchLLM({
   ...models.llm.QWEN3_0_6B.DEFAULT,
+  stopRegex: /<\|endoftext\|>/,
+});
+```
+
+The pattern is checked against the accumulated response after every token. The match is always removed from the value returned by `generate()`. Tokens are streamed to the callback before the check, so for a pattern that spans several tokens the callback may receive the beginning of the match; single-token stops such as `<|endoftext|>` are cut cleanly from both.
+
+Qwen 3 also needs its official chat template. The `tokenizer_config.json` that `react-native-executorch` 0.10 downloads for `QWEN3_*` carries a Qwen 2.5 style template that replays earlier `<think>` blocks into the prompt and adds its own system line; from the second turn on the model then ends with `<|endoftext|>` before giving an answer. Until the asset is updated, point `tokenizerConfigPath` at the previous release's file, which has the official template:
+
+```typescript
+const llm = new ExecuTorchLLM({
+  ...models.llm.QWEN3_0_6B.DEFAULT,
+  tokenizerConfigPath:
+    'https://huggingface.co/software-mansion/react-native-executorch-qwen-3/resolve/v0.9.0/tokenizer_config.json',
   stopRegex: /<\|endoftext\|>/,
 });
 ```

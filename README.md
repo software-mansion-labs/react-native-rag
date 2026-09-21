@@ -50,7 +50,7 @@ You will also need an embeddings model and a large language model. We recommend 
 npm install @react-native-rag/executorch react-native-executorch react-native-worklets react-native-blob-util
 ```
 
-> `react-native-executorch` 0.10 requires React Native 0.83+ (Expo SDK 55+ with development builds), the New Architecture, iOS 17+ and Android 13+. See the [`@react-native-rag/executorch` README](packages/executorch/README.md) for details.
+> `react-native-executorch` 0.10 requires React Native 0.83 to 0.86 (0.87 with `react-native-worklets` 0.12), Expo SDK 55+ with development builds, the New Architecture, iOS 17+ and Android 13+. See the [`@react-native-rag/executorch` README](packages/executorch/README.md) for details.
 
 For persisting vector stores, you can use [`@react-native-rag/op-sqlite`](packages/op-sqlite/README.md):
 
