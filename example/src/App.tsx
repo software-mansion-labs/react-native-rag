@@ -41,6 +41,12 @@ export default function App() {
   const llm = useMemo(() => {
     return new ExecuTorchLLM({
       ...models.llm.QWEN3_0_6B.DEFAULT,
+      // The v0.10.0 tokenizer_config.json ships a Qwen2.5-style chat template that replays
+      // earlier <think> blocks into the prompt; Qwen3 then ends its turn early with
+      // <|endoftext|> and never produces a final answer. Use the official Qwen3 template,
+      // which strips previous reasoning, until react-native-executorch updates the asset.
+      tokenizerConfigPath:
+        'https://huggingface.co/software-mansion/react-native-executorch-qwen-3/resolve/v0.9.0/tokenizer_config.json',
       // Qwen sometimes emits its pad token and keeps going instead of ending the turn.
       stopRegex: /<\|endoftext\|>/,
       onDownloadProgress: setDownloadProgress,

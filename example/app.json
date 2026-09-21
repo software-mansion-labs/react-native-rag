@@ -35,7 +35,8 @@
             "deploymentTarget": "17.0"
           }
         }
-      ]
+      ],
+      "expo-status-bar"
     ]
   }
 }
