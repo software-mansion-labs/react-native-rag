@@ -104,6 +104,7 @@ export class ExecuTorchLLM implements LLM {
   private preprocessor: llm.ChatPreprocessor | null = null;
   private tokenizer: nlp.Tokenizer | null = null;
   private eosToken = '';
+  private isGenerating = false;
 
   private model: LLMModel;
   private onDownloadProgress: (progress: number) => void;
@@ -256,6 +257,11 @@ export class ExecuTorchLLM implements LLM {
     if (!runner || !preprocessor || !tokenizer) {
       throw new Error('LLM not loaded. Call load() first.');
     }
+    // The preprocessor and the KV cache are shared, so turns cannot overlap.
+    if (this.isGenerating) {
+      throw new Error('LLM is already generating. Call interrupt() first.');
+    }
+    this.isGenerating = true;
 
     const hasSystemMessage = messages.some(({ role }) => role === 'system');
     const history: Message[] =
@@ -287,6 +293,7 @@ export class ExecuTorchLLM implements LLM {
       throw error;
     } finally {
       preprocessor.clear();
+      this.isGenerating = false;
     }
   }
 }

@@ -32,6 +32,10 @@ export default function App() {
   const vectorStore = useMemo(() => {
     return new OPSQLiteVectorStore({
       name: 'rag_example_db1',
+      // On Android `DEFAULT` resolves to the Vulkan backend, which the Android emulator
+      // cannot run: the app stays at "Loading 0.00%". On the emulator pin an XNNPACK
+      // variant instead, e.g. `ALL_MINILM_L6_V2.XNNPACK_FP32` here and
+      // `QWEN3_0_6B.XNNPACK_8DA4W` for the LLM below. Physical devices are fine.
       embeddings: new ExecuTorchEmbeddings(
         models.textEmbeddings.ALL_MINILM_L6_V2.DEFAULT
       ),

@@ -8,7 +8,7 @@
     "!**/__tests__"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "run -T jest --config ../../package.json packages/executorch"
   },
   "license": "MIT",
   "description": "React Native ExecuTorch wrapper for React Native RAG",

@@ -10,6 +10,12 @@ npm install @react-native-rag/executorch react-native-executorch react-native-wo
 
 `react-native-worklets` and `react-native-blob-util` are peer dependencies of `react-native-executorch` 0.10 and of this package. On Expo SDK 55 and 56 install `react-native-worklets` with your package manager rather than `npx expo install`, which would pick an older bundled version.
 
+> [!IMPORTANT]
+> **Babel plugin.** This package ships worklets, so your app must compile them. Expo's `babel-preset-expo` does it automatically once `react-native-worklets` is installed. In a bare React Native app add `'react-native-worklets/plugin'` as the **last** entry of `plugins` in `babel.config.js`, then restart Metro with `--reset-cache`. Without it `generate()` fails at runtime.
+
+> [!IMPORTANT]
+> **Android.** Set `minSdkVersion` to 26 or higher (Expo defaults to 24, see below). On the **Android emulator** do not use `models.*.DEFAULT`: it resolves to the Vulkan backend, which the emulator cannot run, and loading hangs at 0%. Pin an `XNNPACK_*` variant there, for example `models.textEmbeddings.ALL_MINILM_L6_V2.XNNPACK_FP32` and `models.llm.QWEN3_0_6B.XNNPACK_8DA4W`. Physical devices work with `DEFAULT`.
+
 Requirements inherited from `react-native-executorch` 0.10:
 
 - React Native 0.83+ (bare) or Expo SDK 55+ with development builds. Expo Go is not supported. The upper bound comes from `react-native-worklets`: 0.10.x and 0.11.x support React Native 0.83 to 0.86, 0.12.x up to 0.87.
@@ -84,7 +90,7 @@ Parameters:
 | `stopRegex`           | `RegExp` (optional)          | Stops generation as soon as the response matches; the match is cut from the result. |
 | `onDownloadProgress`  | `(progress: number) => void` | Download progress callback in the `0-1` range.                              |
 
-Each `generate()` call is stateless: the whole message history is rendered through the model's chat template and fed to the model from a fresh KV cache. The model itself is loaded once by `load()` and kept in memory until `unload()`.
+Each `generate()` call is stateless: the whole message history is rendered through the model's chat template and fed to the model from a fresh KV cache. The model itself is loaded once by `load()` and kept in memory until `unload()`. One instance runs one generation at a time; a `generate()` call that overlaps a running one rejects, so call `interrupt()` and wait for the pending promise first.
 
 When the history does not fit the model's context window, the oldest turns are dropped until the prompt leaves room for the response (`generationConfig.maxNewTokens`, or 512 tokens when unset). System messages and the last message are always kept.
 

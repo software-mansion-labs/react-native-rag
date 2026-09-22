@@ -181,6 +181,26 @@ describe('ExecuTorchLLM', () => {
     expect(mockPreprocessor.clear).toHaveBeenCalledTimes(1);
   });
 
+  it('rejects a generation that overlaps a running one', async () => {
+    const llm = new ExecuTorchLLM(params);
+    await llm.load();
+    const input: Message[] = [{ role: 'user', content: 'x' }];
+
+    const first = llm.generate(input, () => {});
+    await expect(llm.generate(input, () => {})).rejects.toThrow(
+      /already generating/
+    );
+    await expect(first).resolves.toBe('Hello');
+    expect(mockRunner.generate).toHaveBeenCalledTimes(1);
+
+    // The flag is released, also after a failure.
+    mockRunner.generate.mockImplementationOnce(() => {
+      throw new Error('boom');
+    });
+    await expect(llm.generate(input, () => {})).rejects.toThrow('boom');
+    await expect(llm.generate(input, () => {})).resolves.toBe('Hello');
+  });
+
   it('maps interrupt to runner.stop and unload to dispose', async () => {
     const llm = new ExecuTorchLLM(params);
     await llm.interrupt();
