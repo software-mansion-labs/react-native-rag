@@ -47,8 +47,10 @@ npm install react-native-rag
 You will also need an embeddings model and a large language model. We recommend using [`@react-native-rag/executorch`](packages/executorch/README.md) for on-device inference. To use it, install the following packages:
 
 ```sh
-npm install @react-native-rag/executorch react-native-executorch
+npm install @react-native-rag/executorch react-native-executorch react-native-worklets react-native-blob-util
 ```
+
+> `react-native-executorch` 0.10 requires React Native 0.83 to 0.86 (0.87 with `react-native-worklets` 0.12), Expo SDK 55+ with development builds, the New Architecture, iOS 17+ and Android 13+. See the [`@react-native-rag/executorch` README](packages/executorch/README.md) for details.
 
 For persisting vector stores, you can use [`@react-native-rag/op-sqlite`](packages/op-sqlite/README.md):
 
@@ -77,11 +79,11 @@ import {
 
 const vectorStore = new MemoryVectorStore({
   embeddings: new ExecuTorchEmbeddings(
-    models.text_embedding.all_minilm_l6_v2()
+    models.textEmbeddings.ALL_MINILM_L6_V2.DEFAULT
   ),
 });
 
-const llm = new ExecuTorchLLM(models.llm.lfm2_5_1_2b_instruct());
+const llm = new ExecuTorchLLM(models.llm.LFM2_5_1_2B.DEFAULT);
 
 const App = () => {
   const rag = useRAG({ vectorStore, llm });
@@ -111,19 +113,22 @@ const App = () => {
   useEffect(() => {
     const initializeRAG = async () => {
       const embeddings = new ExecuTorchEmbeddings(
-        models.text_embedding.all_minilm_l6_v2()
+        models.textEmbeddings.ALL_MINILM_L6_V2.DEFAULT
       );
 
-      const llm = new ExecuTorchLLM({
-        ...models.llm.lfm2_5_1_2b_instruct(),
-        responseCallback: setResponse,
-      });
+      const llm = new ExecuTorchLLM(models.llm.LFM2_5_1_2B.DEFAULT);
 
       const vectorStore = new MemoryVectorStore({ embeddings });
       const ragInstance = new RAG({ llm, vectorStore });
 
       await ragInstance.load();
       setRag(ragInstance);
+
+      const answer = await ragInstance.generate({
+        input: 'What is RAG?',
+        callback: (token) => setResponse((prev) => (prev ?? '') + token),
+      });
+      console.log(answer);
     };
     initializeRAG();
   }, []);
@@ -161,14 +166,13 @@ const App = () => {
       // NOTE: Calling load on VectorStore will automatically load the embeddings model
       // so loading the embeddings model separately is not necessary in this case.
       const embeddings = await new ExecuTorchEmbeddings(
-        models.text_embedding.all_minilm_l6_v2()
+        models.textEmbeddings.ALL_MINILM_L6_V2.DEFAULT
       ).load();
 
       // Instantiate and load the Large Language Model
-      const llm = await new ExecuTorchLLM({
-        ...models.llm.lfm2_5_1_2b_instruct(),
-        responseCallback: setResponse,
-      }).load();
+      const llm = await new ExecuTorchLLM(
+        models.llm.LFM2_5_1_2B.DEFAULT
+      ).load();
 
       // Instantiate and initialize the Vector Store
       const vectorStore = await new MemoryVectorStore({ embeddings }).load();
@@ -176,6 +180,12 @@ const App = () => {
       setEmbeddings(embeddings);
       setLLM(llm);
       setVectorStore(vectorStore);
+
+      // Generate directly with the LLM, streaming tokens as they arrive
+      await llm.generate(
+        [{ role: 'user', content: 'What is RAG?' }],
+        (token) => setResponse((prev) => (prev ?? '') + token)
+      );
     };
     initialize();
   }, []);

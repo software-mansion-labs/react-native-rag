@@ -1,14 +1,11 @@
 import { type Message, useRAG } from 'react-native-rag';
 import { OPSQLiteVectorStore } from '@react-native-rag/op-sqlite';
-import { initExecutorch, models } from 'react-native-executorch';
-import { ExpoResourceFetcher } from 'react-native-executorch-expo-resource-fetcher';
+import { models } from 'react-native-executorch';
 import {
   ExecuTorchEmbeddings,
   ExecuTorchLLM,
 } from '@react-native-rag/executorch';
 import { useMemo, useState } from 'react';
-
-initExecutorch({ resourceFetcher: ExpoResourceFetcher });
 import {
   KeyboardAvoidingView,
   Text,
@@ -35,15 +32,27 @@ export default function App() {
   const vectorStore = useMemo(() => {
     return new OPSQLiteVectorStore({
       name: 'rag_example_db1',
+      // On Android `DEFAULT` resolves to the Vulkan backend, which the Android emulator
+      // cannot run: the app stays at "Loading 0.00%". On the emulator pin an XNNPACK
+      // variant instead, e.g. `ALL_MINILM_L6_V2.XNNPACK_FP32` here and
+      // `QWEN3_0_6B.XNNPACK_8DA4W` for the LLM below. Physical devices are fine.
       embeddings: new ExecuTorchEmbeddings(
-        models.text_embedding.all_minilm_l6_v2()
+        models.textEmbeddings.ALL_MINILM_L6_V2.DEFAULT
       ),
     });
   }, []);
 
   const llm = useMemo(() => {
     return new ExecuTorchLLM({
-      ...models.llm.qwen3_0_6b(),
+      ...models.llm.QWEN3_0_6B.DEFAULT,
+      // The v0.10.0 tokenizer_config.json ships a Qwen2.5-style chat template that replays
+      // earlier <think> blocks into the prompt; Qwen3 then ends its turn early with
+      // <|endoftext|> and never produces a final answer. Use the official Qwen3 template,
+      // which strips previous reasoning, until react-native-executorch updates the asset.
+      tokenizerConfigPath:
+        'https://huggingface.co/software-mansion/react-native-executorch-qwen-3/resolve/v0.9.0/tokenizer_config.json',
+      // Qwen sometimes emits its pad token and keeps going instead of ending the turn.
+      stopRegex: /<\|endoftext\|>/,
       onDownloadProgress: setDownloadProgress,
     });
   }, []);

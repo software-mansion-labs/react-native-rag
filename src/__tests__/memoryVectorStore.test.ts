@@ -158,21 +158,7 @@ describe('MemoryVectorStore', () => {
     expect(remaining.has('b')).toBe(false);
   });
 
-  test('delete() by predicate works', async () => {
-    const store = new MemoryVectorStore({ embeddings: new MockEmbeddings(2) });
-    await store.load();
-    await store.add({ id: 'a', document: 'keep', metadata: { role: 'x' } });
-    await store.add({ id: 'b', document: 'drop', metadata: { role: 'y' } });
-    await store.add({ id: 'c', document: 'keep-too', metadata: { role: 'x' } });
-
-    await store.delete({ predicate: (row) => row.metadata!.role === 'y' });
-
-    const res = await store.query({ queryText: 'keep', nResults: 10 });
-    const ids = new Set(res.map((r) => r.id));
-    expect(ids.has('b')).toBe(false);
-  });
-
-  test('delete() supports complex predicates', async () => {
+  test('delete() by metadata predicate keeps the non-matching rows', async () => {
     const store = new MemoryVectorStore({ embeddings: new MockEmbeddings(2) });
     await store.load();
     await store.add({ id: 'a', document: 'doc-a', metadata: { keep: false } });
