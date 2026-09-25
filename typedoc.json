@@ -19,5 +19,8 @@
   "disableSources": true,
 
   "cleanOutputDir": true,
-  "hideGenerator": true
+  "hideGenerator": true,
+
+  "customFooterHtml": "<p style=\"text-align: center\">&copy; <a href=\"https://swmansion.com/\" target=\"_blank\" rel=\"noopener\">Software Mansion</a> <script>document.write(new Date().getFullYear())</script>. All trademarks and copyrights belong to their respective owners. Read about our <a href=\"https://swmansion.com/privacy/policy/\" target=\"_blank\" rel=\"noopener\">Privacy Policy</a>.</p>",
+  "customFooterHtmlDisableWrapper": true
 }
