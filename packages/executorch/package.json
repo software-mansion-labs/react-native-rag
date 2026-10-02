@@ -23,13 +23,13 @@
   },
   "peerDependencies": {
     "react-native-blob-util": "^0.24.0",
-    "react-native-executorch": "^0.10.2",
+    "react-native-executorch": "^0.10.4",
     "react-native-rag": "^0.10.2",
     "react-native-worklets": ">=0.10.0 <0.13.0"
   },
   "devDependencies": {
     "react-native-blob-util": "^0.24.0",
-    "react-native-executorch": "^0.10.2",
+    "react-native-executorch": "^0.10.4",
     "react-native-rag": "workspace:*",
     "react-native-worklets": "^0.10.0"
   }

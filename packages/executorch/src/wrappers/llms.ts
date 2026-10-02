@@ -34,49 +34,38 @@ interface ExecuTorchLLMParams extends LLMModel {
    * Defaults to {@link DEFAULT_SYSTEM_PROMPT}. Pass an empty string to disable.
    */
   systemPrompt?: string;
-  /**
-   * Stops generation as soon as the accumulated response matches. The matched text is
-   * cut from the returned response. Tokens are streamed to the callback before the
-   * check, so a pattern spanning several tokens may reach the callback partially;
-   * single-token stops are cut cleanly from both. Useful for models that run past
-   * their end of turn, e.g. `/<\|endoftext\|>/` for Qwen.
-   */
-  stopRegex?: RegExp;
 }
 
 /**
  * Runs one full generation on the worklet runtime.
- * Resets the KV cache, prefills the rendered prompt and decodes until EOS, stop
- * or a `stopRegex` match. Tokens are forwarded to the React Native thread via `scheduleOnRN`.
+ * Resets the KV cache, prefills the rendered prompt and decodes until the model
+ * emits one of its stop tokens or `interrupt()` is called. Tokens are forwarded
+ * to the React Native thread via `scheduleOnRN`.
  */
 function generateWorklet(
   runner: llm.LLMRunner,
   prompt: llm.Prompt,
   options: {
     readonly config: llm.LLMGenerationConfig;
-    readonly eosToken: string;
-    readonly stopRegex?: RegExp;
+    readonly stopTokens: readonly string[];
     readonly onToken: (token: string) => void;
   }
 ): string {
   'worklet';
-  const { config, eosToken, stopRegex, onToken } = options;
+  const { config, stopTokens, onToken } = options;
 
   let response = '';
   let stopped = false;
   runner.reset();
   runner.generate(prompt, config, (token: string) => {
-    if (stopped || token === eosToken) return;
+    if (stopped) return;
 
-    if (stopRegex) {
-      stopRegex.lastIndex = 0;
-      const match = stopRegex.exec(response + token);
-      if (match) {
-        response = (response + token).slice(0, match.index);
-        stopped = true;
-        runner.stop();
-        return;
-      }
+    // The tokenizer config can name several terminal tokens (eos, eot, pad) and the
+    // runner does not halt on all of them by itself, so stop explicitly on any of them.
+    if (stopTokens.includes(token)) {
+      stopped = true;
+      runner.stop();
+      return;
     }
 
     response += token;
@@ -103,14 +92,13 @@ export class ExecuTorchLLM implements LLM {
   private runner: llm.LLMRunner | null = null;
   private preprocessor: llm.ChatPreprocessor | null = null;
   private tokenizer: nlp.Tokenizer | null = null;
-  private eosToken = '';
+  private stopTokens: readonly string[] = [];
   private isGenerating = false;
 
   private model: LLMModel;
   private onDownloadProgress: (progress: number) => void;
   private generationConfig: llm.LLMGenerationConfig;
   private systemPrompt: string;
-  private stopRegex: RegExp | undefined;
 
   /**
    * Creates a new ExecuTorch LLM instance.
@@ -121,21 +109,17 @@ export class ExecuTorchLLM implements LLM {
    * @param params.onDownloadProgress - Download progress callback (0-1).
    * @param params.generationConfig - Generation configuration forwarded to ExecuTorch.
    * @param params.systemPrompt - System prompt used when the history has none. Empty string disables it.
-   * @param params.stopRegex - Stops generation as soon as the response matches.
    */
   constructor({
     onDownloadProgress = () => {},
     generationConfig = {},
     systemPrompt = DEFAULT_SYSTEM_PROMPT,
-    stopRegex,
     ...model
   }: ExecuTorchLLMParams) {
     this.model = model;
     this.onDownloadProgress = onDownloadProgress;
-    // Never echo the rendered prompt back through the token stream.
-    this.generationConfig = { echo: false, ...generationConfig };
+    this.generationConfig = generationConfig;
     this.systemPrompt = systemPrompt;
-    this.stopRegex = stopRegex;
   }
 
   /**
@@ -152,7 +136,7 @@ export class ExecuTorchLLM implements LLM {
         resolved.tokenizerConfigPath,
         'utf8'
       );
-      const { chatTemplate, eosToken } = llm.parseTokenizerConfig(
+      const { chatTemplate, stopTokens } = llm.parseTokenizerConfig(
         JSON.parse(tokenizerConfigStr)
       );
 
@@ -178,7 +162,7 @@ export class ExecuTorchLLM implements LLM {
         );
 
         this.scope = scope;
-        this.eosToken = eosToken;
+        this.stopTokens = stopTokens;
         this.preprocessor = preprocessor;
         this.tokenizer = tokenizer;
         this.runner = runner;
@@ -281,8 +265,7 @@ export class ExecuTorchLLM implements LLM {
       });
       return await wrapAsync(generateWorklet)(runner, prompt, {
         config: this.generationConfig,
-        eosToken: this.eosToken,
-        stopRegex: this.stopRegex,
+        stopTokens: this.stopTokens,
         onToken: callback,
       });
     } catch (error) {

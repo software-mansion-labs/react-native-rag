@@ -55,6 +55,7 @@ jest.mock('react-native-executorch', () => {
       parseTokenizerConfig: jest.fn(() => ({
         chatTemplate: 'TEMPLATE',
         eosToken: '<eos>',
+        stopTokens: ['<eos>', '<pad>'],
       })),
       createChatPreprocessor: jest.fn(() => preprocessor),
       createLLMRunner: jest.fn(() => runner),
@@ -135,7 +136,7 @@ describe('ExecuTorchLLM', () => {
     expect(mockRunner.reset).toHaveBeenCalledTimes(1);
     expect(mockRunner.generate).toHaveBeenCalledWith(
       JSON.stringify(messages),
-      { echo: false, temperature: 0.2 },
+      { temperature: 0.2 },
       expect.any(Function)
     );
     expect(tokens).toEqual(['Hel', 'lo']);
@@ -255,12 +256,13 @@ describe('ExecuTorchLLM', () => {
     expect(mockRunner.reset).toHaveBeenCalledTimes(2);
   });
 
-  it('stops on stopRegex and cuts the match from the response', async () => {
-    const llm = new ExecuTorchLLM({ ...params, stopRegex: /<\|endoftext\|>/ });
+  it('stops on any stop token from the tokenizer config, not only EOS', async () => {
+    const llm = new ExecuTorchLLM(params);
     await llm.load();
+    // The runner keeps decoding past the pad token; the wrapper has to halt it.
     mockRunner.generate.mockImplementationOnce(
       (_prompt: string, _config: unknown, onToken: (token: string) => void) => {
-        ['Done', '.', '<|endoftext|>', 'Human:', ' more'].forEach(onToken);
+        ['Done', '.', '<pad>', 'Human:', ' more'].forEach(onToken);
         return {};
       }
     );

@@ -24,7 +24,7 @@
     "react-dom": "19.2.3",
     "react-native": "0.86.3",
     "react-native-blob-util": "^0.24.0",
-    "react-native-executorch": "^0.10.2",
+    "react-native-executorch": "^0.10.4",
     "react-native-rag": "workspace:*",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-svg": "15.15.4",
