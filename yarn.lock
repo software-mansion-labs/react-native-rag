@@ -4095,7 +4095,7 @@ __metadata:
   peerDependencies:
     react-native-blob-util: ^0.24.0
     react-native-executorch: ^0.10.4
-    react-native-rag: ^0.10.2
+    react-native-rag: ^0.10.0
     react-native-worklets: ">=0.10.0 <0.13.0"
   languageName: unknown
   linkType: soft
@@ -4108,7 +4108,7 @@ __metadata:
     react-native-rag: "workspace:*"
   peerDependencies:
     "@op-engineering/op-sqlite": ^15.2.7
-    react-native-rag: ^0.10.2
+    react-native-rag: ^0.10.0
   languageName: unknown
   linkType: soft
 
