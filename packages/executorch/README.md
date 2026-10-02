@@ -13,9 +13,6 @@ npm install @react-native-rag/executorch react-native-executorch react-native-wo
 > [!IMPORTANT]
 > **Babel plugin.** This package ships worklets, so your app must compile them. Expo's `babel-preset-expo` does it automatically once `react-native-worklets` is installed. In a bare React Native app add `'react-native-worklets/plugin'` as the **last** entry of `plugins` in `babel.config.js`, then restart Metro with `--reset-cache`. Without it `generate()` fails at runtime.
 
-> [!IMPORTANT]
-> **Android.** Set `minSdkVersion` to 26 or higher (Expo defaults to 24, see below). On the **Android emulator** do not use `models.*.DEFAULT`: it resolves to the Vulkan backend, which the emulator cannot run, and loading hangs at 0%. Pin an `XNNPACK_*` variant there, for example `models.textEmbeddings.ALL_MINILM_L6_V2.XNNPACK_FP32` and `models.llm.QWEN3_0_6B.XNNPACK_8DA4W`. Physical devices work with `DEFAULT`.
-
 Requirements inherited from `react-native-executorch` 0.10:
 
 - React Native 0.83+ (bare) or Expo SDK 55+ with development builds. Expo Go is not supported. The upper bound comes from `react-native-worklets`: 0.10.x and 0.11.x support React Native 0.83 to 0.86, 0.12.x up to 0.87.
@@ -96,8 +93,6 @@ When the history does not fit the model's context window, the oldest turns are d
 ### Choosing a backend
 
 `models.*.DEFAULT` resolves at import time to the best backend linked into your app: Core ML or MLX on iOS devices, Vulkan on Android devices, XNNPACK on the iOS simulator and as the universal fallback. You can pin a variant explicitly, for example `models.textEmbeddings.ALL_MINILM_L6_V2.XNNPACK_FP32`.
-
-> The Android emulator has no GPU that the Vulkan backend can use, and `DEFAULT` does not fall back automatically there. Pin an `XNNPACK_*` variant when running on the emulator.
 
 To limit the native binaries downloaded at install time, add a `react-native-executorch` block to your app's `package.json`:
 
