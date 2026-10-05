@@ -288,6 +288,39 @@ describe('ExecuTorchLLM', () => {
     await expect(llm.generate(input, () => {})).resolves.toBe('Hello');
   });
 
+  it('honours an interrupt that lands during the prefill', async () => {
+    const llm = new ExecuTorchLLM(params);
+    await llm.load();
+
+    // Mirrors ExecuTorch: stop() sets a flag that is cleared once decoding starts.
+    let stopRequested = false;
+    mockRunner.stop.mockImplementation(() => {
+      stopRequested = true;
+    });
+    let interrupting!: Promise<void>;
+    mockRunner.generate.mockImplementationOnce(
+      (_prompt: string, _config: unknown, onToken: (token: string) => void) => {
+        interrupting = llm.interrupt(); // lands during the prefill
+        stopRequested = false; // decoding starts
+        for (const token of ['a', 'b', 'c', 'd']) {
+          if (stopRequested) break;
+          onToken(token);
+        }
+        return {};
+      }
+    );
+
+    const tokens: string[] = [];
+    const result = await llm.generate([{ role: 'user', content: 'x' }], (t) =>
+      tokens.push(t)
+    );
+    await interrupting;
+
+    expect(tokens).toEqual(['a']);
+    expect(result).toBe('a');
+    mockRunner.stop.mockReset();
+  });
+
   it('ignores interrupt without a running generation and disposes on unload', async () => {
     const llm = new ExecuTorchLLM(params);
     await llm.interrupt();

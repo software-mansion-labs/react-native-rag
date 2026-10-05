@@ -313,13 +313,17 @@ export class ExecuTorchLLM implements LLM {
       const prompt = preprocessor.process(fitted, fitted.length, {
         addGenPrompt: true,
       });
-      // ExecuTorch clears its stop flag when the native generate starts, so an
-      // interrupt() that landed during the steps above would otherwise be lost.
+      // ExecuTorch clears its stop flag only once decoding starts, after the
+      // prefill, so an interrupt() that lands before then would otherwise be lost.
       if (this.interruptRequested) return '';
       return await wrapAsync(generateWorklet)(runner, prompt, {
         config: this.generationConfig,
         stopTokens: this.stopTokens,
-        onToken: callback,
+        onToken: (token: string) => {
+          // An interrupt() during the dispatch or the prefill is repeated now that decoding runs.
+          if (this.interruptRequested) this.runner?.stop();
+          callback(token);
+        },
       });
     } catch (error) {
       // Leave a clean KV cache behind. The reset must never replace the error it is unwinding.
