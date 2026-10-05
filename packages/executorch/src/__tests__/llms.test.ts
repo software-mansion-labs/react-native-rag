@@ -111,6 +111,66 @@ describe('ExecuTorchLLM', () => {
     );
   });
 
+  it('shares one native load between overlapping load() calls', async () => {
+    const llm = new ExecuTorchLLM(params);
+
+    const [first, second] = await Promise.all([llm.load(), llm.load()]);
+
+    expect(first).toBe(llm);
+    expect(second).toBe(llm);
+    expect(mockExecutorch.download).toHaveBeenCalledTimes(1);
+    expect(mockExecutorch.llm.createLLMRunner).toHaveBeenCalledTimes(1);
+  });
+
+  it('disposes a load that unload() overtook', async () => {
+    let release!: () => void;
+    mockExecutorch.download.mockImplementationOnce(
+      (source: unknown) =>
+        new Promise((resolve) => {
+          release = () => resolve(source);
+        })
+    );
+    const llm = new ExecuTorchLLM(params);
+    const input: Message[] = [{ role: 'user', content: 'x' }];
+
+    const loading = llm.load();
+    const unloading = llm.unload();
+    release();
+    await Promise.all([loading, unloading]);
+
+    expect(mockExecutorch.llm.createLLMRunner).toHaveBeenCalledTimes(1);
+    expect(mockRunner.dispose).toHaveBeenCalledTimes(1);
+    await expect(llm.generate(input, () => {})).rejects.toThrow(/load\(\)/);
+
+    // A later load() starts from scratch.
+    await llm.load();
+    expect(mockExecutorch.llm.createLLMRunner).toHaveBeenCalledTimes(2);
+    await expect(llm.generate(input, () => {})).resolves.toBe('Hello');
+  });
+
+  it('keeps a load that was re-requested after an unload(), as React strict mode does', async () => {
+    let release!: () => void;
+    mockExecutorch.download.mockImplementationOnce(
+      (source: unknown) =>
+        new Promise((resolve) => {
+          release = () => resolve(source);
+        })
+    );
+    const llm = new ExecuTorchLLM(params);
+
+    const first = llm.load();
+    const unloading = llm.unload();
+    const second = llm.load();
+    release();
+    await Promise.all([first, unloading, second]);
+
+    expect(mockExecutorch.llm.createLLMRunner).toHaveBeenCalledTimes(1);
+    expect(mockRunner.dispose).not.toHaveBeenCalled();
+    await expect(
+      llm.generate([{ role: 'user', content: 'x' }], () => {})
+    ).resolves.toBe('Hello');
+  });
+
   it('throws when generating before load', async () => {
     const llm = new ExecuTorchLLM(params);
     await expect(llm.generate([], () => {})).rejects.toThrow(/load\(\)/);

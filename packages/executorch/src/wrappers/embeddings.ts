@@ -25,6 +25,10 @@ interface ExecuTorchEmbeddingsParams {
  */
 export class ExecuTorchEmbeddings implements Embeddings {
   private embedder: TextEmbedder | null = null;
+  /** The in-flight {@link load} call, if any, shared by overlapping callers. */
+  private loading: Promise<void> | null = null;
+  /** Whether the most recent call was {@link load} rather than {@link unload}. */
+  private wantLoaded = false;
   private model: TextEmbedderModel;
   private onDownloadProgress: (progress: number) => void;
 
@@ -48,22 +52,46 @@ export class ExecuTorchEmbeddings implements Embeddings {
 
   /**
    * Downloads (if needed) and loads the model and tokenizer via `react-native-executorch`.
+   * Overlapping calls share one load. An {@link unload} issued while the load
+   * is in flight wins unless {@link load} is called again before it settles.
    * @returns Promise that resolves to the same instance.
    */
   async load() {
+    this.wantLoaded = true;
     if (!this.embedder) {
-      const resolved = await download(this.model, {
-        onProgress: this.onDownloadProgress,
+      this.loading ??= this.doLoad().finally(() => {
+        this.loading = null;
       });
-      this.embedder = await createTextEmbedder(resolved);
+      await this.loading;
     }
     return this;
   }
 
+  private async doLoad(): Promise<void> {
+    const resolved = await download(this.model, {
+      onProgress: this.onDownloadProgress,
+    });
+    const embedder = await createTextEmbedder(resolved);
+    // unload() was called while loading and nothing asked for the model since.
+    if (!this.wantLoaded) {
+      embedder.dispose();
+      return;
+    }
+    this.embedder = embedder;
+  }
+
   /**
-   * Unloads the underlying model and releases its native resources.
+   * Unloads the underlying model and releases its native resources. A load
+   * still in flight is awaited first so that nothing is left behind.
    */
   async unload() {
+    this.wantLoaded = false;
+    if (this.loading) {
+      // Its outcome belongs to the load() caller; a failed load leaves nothing to release.
+      await this.loading.catch(() => {});
+    }
+    // load() was called again while we waited; the resources now belong to it.
+    if (this.wantLoaded) return;
     this.embedder?.dispose();
     this.embedder = null;
   }

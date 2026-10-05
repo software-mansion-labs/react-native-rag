@@ -49,6 +49,48 @@ describe('ExecuTorchEmbeddings', () => {
     expect(mockExecutorch.createTextEmbedder).toHaveBeenCalledTimes(1);
   });
 
+  it('shares one native load between overlapping load() calls', async () => {
+    const embeddings = new ExecuTorchEmbeddings(model);
+
+    await Promise.all([embeddings.load(), embeddings.load()]);
+
+    expect(mockExecutorch.download).toHaveBeenCalledTimes(1);
+    expect(mockExecutorch.createTextEmbedder).toHaveBeenCalledTimes(1);
+  });
+
+  it('disposes a load that unload() overtook, and keeps one re-requested by load()', async () => {
+    const deferDownload = () => {
+      let release!: () => void;
+      mockExecutorch.download.mockImplementationOnce(
+        (source: unknown) =>
+          new Promise((resolve) => {
+            release = () => resolve(source);
+          })
+      );
+      return () => release();
+    };
+
+    const embeddings = new ExecuTorchEmbeddings(model);
+    let release = deferDownload();
+    const loading = embeddings.load();
+    const unloading = embeddings.unload();
+    release();
+    await Promise.all([loading, unloading]);
+    expect(mockExecutorch.createTextEmbedder).toHaveBeenCalledTimes(1);
+    expect(mockEmbedder.dispose).toHaveBeenCalledTimes(1);
+    await expect(embeddings.embed('x')).rejects.toThrow(/load\(\)/);
+
+    release = deferDownload();
+    const first = embeddings.load();
+    const reunloading = embeddings.unload();
+    const second = embeddings.load();
+    release();
+    await Promise.all([first, reunloading, second]);
+    expect(mockExecutorch.createTextEmbedder).toHaveBeenCalledTimes(2);
+    expect(mockEmbedder.dispose).toHaveBeenCalledTimes(1);
+    await expect(embeddings.embed('x')).resolves.toEqual([0.5, -1, 2]);
+  });
+
   it('throws when embedding before load', async () => {
     const embeddings = new ExecuTorchEmbeddings(model);
     await expect(embeddings.embed('x')).rejects.toThrow(/load\(\)/);

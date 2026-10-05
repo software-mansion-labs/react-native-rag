@@ -93,6 +93,10 @@ export class ExecuTorchLLM implements LLM {
   private preprocessor: llm.ChatPreprocessor | null = null;
   private tokenizer: nlp.Tokenizer | null = null;
   private stopTokens: readonly string[] = [];
+  /** The in-flight {@link load} call, if any, shared by overlapping callers. */
+  private loading: Promise<void> | null = null;
+  /** Whether the most recent call was {@link load} rather than {@link unload}. */
+  private wantLoaded = false;
   /** The in-flight {@link generate} call, if any. */
   private pending: Promise<string> | null = null;
   /** Set by {@link interrupt} so a request that lands before the native generate starts is honoured. */
@@ -127,54 +131,70 @@ export class ExecuTorchLLM implements LLM {
 
   /**
    * Downloads (if needed) and loads the model, tokenizer and chat template via `react-native-executorch`.
+   * Overlapping calls share one load. An {@link unload} issued while the load
+   * is in flight wins unless {@link load} is called again before it settles.
    * @returns Promise that resolves to the same instance.
    */
   async load() {
+    this.wantLoaded = true;
     if (!this.runner) {
-      const resolved = await download(this.model, {
-        onProgress: this.onDownloadProgress,
+      this.loading ??= this.doLoad().finally(() => {
+        this.loading = null;
       });
-
-      const tokenizerConfigStr = await RNBlobUtil.fs.readFile(
-        resolved.tokenizerConfigPath,
-        'utf8'
-      );
-      const { chatTemplate, stopTokens } = llm.parseTokenizerConfig(
-        JSON.parse(tokenizerConfigStr)
-      );
-
-      // Everything native is owned by the scope, so a failure halfway releases what was already created.
-      const scope = createResourceScope();
-      try {
-        const preprocessor = scope.track(
-          llm.createChatPreprocessor({
-            chatTemplate,
-            modalities: resolved.modalities,
-            preprocessorConfig: resolved.preprocessorConfig,
-          })
-        );
-        const tokenizer = scope.track(
-          await wrapAsync(nlp.loadTokenizer)(resolved.tokenizerPath)
-        );
-        const runner = scope.track(
-          await wrapAsync(llm.createLLMRunner)(
-            resolved.modelPath,
-            resolved.tokenizerPath,
-            resolved.modalities
-          )
-        );
-
-        this.scope = scope;
-        this.stopTokens = stopTokens;
-        this.preprocessor = preprocessor;
-        this.tokenizer = tokenizer;
-        this.runner = runner;
-      } catch (error) {
-        scope.dispose();
-        throw error;
-      }
+      await this.loading;
     }
     return this;
+  }
+
+  private async doLoad(): Promise<void> {
+    const resolved = await download(this.model, {
+      onProgress: this.onDownloadProgress,
+    });
+
+    const tokenizerConfigStr = await RNBlobUtil.fs.readFile(
+      resolved.tokenizerConfigPath,
+      'utf8'
+    );
+    const { chatTemplate, stopTokens } = llm.parseTokenizerConfig(
+      JSON.parse(tokenizerConfigStr)
+    );
+
+    // Everything native is owned by the scope, so a failure halfway releases what was already created.
+    const scope = createResourceScope();
+    try {
+      const preprocessor = scope.track(
+        llm.createChatPreprocessor({
+          chatTemplate,
+          modalities: resolved.modalities,
+          preprocessorConfig: resolved.preprocessorConfig,
+        })
+      );
+      const tokenizer = scope.track(
+        await wrapAsync(nlp.loadTokenizer)(resolved.tokenizerPath)
+      );
+      const runner = scope.track(
+        await wrapAsync(llm.createLLMRunner)(
+          resolved.modelPath,
+          resolved.tokenizerPath,
+          resolved.modalities
+        )
+      );
+
+      // unload() was called while loading and nothing asked for the model since.
+      if (!this.wantLoaded) {
+        scope.dispose();
+        return;
+      }
+
+      this.scope = scope;
+      this.stopTokens = stopTokens;
+      this.preprocessor = preprocessor;
+      this.tokenizer = tokenizer;
+      this.runner = runner;
+    } catch (error) {
+      scope.dispose();
+      throw error;
+    }
   }
 
   /**
@@ -192,9 +212,17 @@ export class ExecuTorchLLM implements LLM {
   }
 
   /**
-   * Unloads the underlying model and releases its native resources.
+   * Unloads the underlying model and releases its native resources. A load
+   * still in flight is awaited first so that nothing is left behind.
    */
   async unload() {
+    this.wantLoaded = false;
+    if (this.loading) {
+      // Its outcome belongs to the load() caller; a failed load leaves nothing to release.
+      await this.loading.catch(() => {});
+    }
+    // load() was called again while we waited; the resources now belong to it.
+    if (this.wantLoaded) return;
     this.scope?.dispose();
     this.scope = null;
     this.runner = null;
