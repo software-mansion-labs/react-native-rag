@@ -1,14 +1,12 @@
 import { type Message, useRAG } from 'react-native-rag';
 import { OPSQLiteVectorStore } from '@react-native-rag/op-sqlite';
-import { initExecutorch, models } from 'react-native-executorch';
-import { ExpoResourceFetcher } from 'react-native-executorch-expo-resource-fetcher';
+import { models } from 'react-native-executorch';
 import {
   ExecuTorchEmbeddings,
   ExecuTorchLLM,
 } from '@react-native-rag/executorch';
 import { useMemo, useState } from 'react';
-
-initExecutorch({ resourceFetcher: ExpoResourceFetcher });
+import * as Device from 'expo-device';
 import {
   KeyboardAvoidingView,
   Text,
@@ -36,14 +34,16 @@ export default function App() {
     return new OPSQLiteVectorStore({
       name: 'rag_example_db1',
       embeddings: new ExecuTorchEmbeddings(
-        models.text_embedding.all_minilm_l6_v2()
+        Device.isDevice
+          ? models.textEmbeddings.ALL_MINILM_L6_V2.DEFAULT
+          : models.textEmbeddings.ALL_MINILM_L6_V2.XNNPACK_FP32
       ),
     });
   }, []);
 
   const llm = useMemo(() => {
     return new ExecuTorchLLM({
-      ...models.llm.qwen3_0_6b(),
+      ...models.llm.QWEN3_0_6B.DEFAULT,
       onDownloadProgress: setDownloadProgress,
     });
   }, []);
@@ -96,10 +96,13 @@ export default function App() {
         input: [...messages, newMessage],
         augmentedGeneration,
       });
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { role: 'assistant', content: result },
-      ]);
+      // An interrupted turn resolves with the tokens produced so far, possibly none.
+      if (result.trim()) {
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { role: 'assistant', content: result },
+        ]);
+      }
     } catch (error) {
       console.error('Error generating response:', error);
       Alert.alert('Error', 'Failed to generate response. Please try again.');
@@ -148,6 +151,7 @@ export default function App() {
             onAddDocument={openDocumentModal}
             onToggleAugmentedGeneration={handleAugmentedGeneration}
             onMessageSubmit={handleMessageSubmit}
+            onInterrupt={rag.interrupt}
             augmentedGeneration={augmentedGeneration}
             isGenerating={rag.isGenerating}
             isReady={rag.isReady}

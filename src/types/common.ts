@@ -9,14 +9,6 @@ export interface Message {
 }
 
 /**
- * Defines a type for a resource's origin or location.
- * - From React Native assets folder (For Files < 512MB)
- * - From remote URL
- * - From local file system
- */
-export type ResourceSource = string | number | object;
-
-/**
  * Single retrieval result.
  */
 export interface GetResult {

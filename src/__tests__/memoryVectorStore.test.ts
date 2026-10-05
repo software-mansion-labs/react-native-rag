@@ -1,11 +1,12 @@
 import { MemoryVectorStore } from '../vector_stores/memoryVectorStore';
-import type { Embeddings } from '../interfaces/embeddings';
+import type { EmbedOptions, Embeddings } from '../interfaces/embeddings';
 
 class MockEmbeddings implements Embeddings {
   public dim: number;
   public loaded = false;
   public unloadCount = 0;
   public embedCalls: string[] = [];
+  public embedKinds: (string | undefined)[] = [];
 
   constructor(dim = 4) {
     this.dim = dim;
@@ -21,8 +22,9 @@ class MockEmbeddings implements Embeddings {
     this.loaded = false;
   }
 
-  async embed(text: string): Promise<number[]> {
+  async embed(text: string, options?: EmbedOptions): Promise<number[]> {
     this.embedCalls.push(text);
+    this.embedKinds.push(options?.kind);
     const v = new Array(this.dim).fill(0);
     for (let i = 0; i < text.length; i++) {
       v[i % this.dim] += text.charCodeAt(i);
@@ -64,13 +66,16 @@ describe('MemoryVectorStore', () => {
     const store = new MemoryVectorStore({ embeddings: emb });
     await store.load();
     emb.embedCalls = [];
+    emb.embedKinds = [];
 
     await store.add({ id: 'x', document: 'Doc X' });
     await store.add({ id: 'y', document: 'Doc Y' });
 
     expect(emb.embedCalls).toEqual(['Doc X', 'Doc Y']);
+    expect(emb.embedKinds).toEqual(['document', 'document']);
     const res = await store.query({ queryText: 'Doc X', nResults: 2 });
     expect(res[0]!.id).toBe('x');
+    expect(emb.embedKinds).toEqual(['document', 'document', 'query']);
   });
 
   test('add() rejects duplicate ids', async () => {
@@ -112,10 +117,12 @@ describe('MemoryVectorStore', () => {
     await store.add({ id: 'k', document: 'old doc' });
 
     emb.embedCalls = [];
+    emb.embedKinds = [];
 
     await store.update({ id: 'k', document: 'new doc' });
 
     expect(emb.embedCalls).toEqual(['new doc']);
+    expect(emb.embedKinds).toEqual(['document']);
 
     const res = await store.query({ queryText: 'new doc', nResults: 1 });
     expect(res[0]!.id).toBe('k');
@@ -158,21 +165,7 @@ describe('MemoryVectorStore', () => {
     expect(remaining.has('b')).toBe(false);
   });
 
-  test('delete() by predicate works', async () => {
-    const store = new MemoryVectorStore({ embeddings: new MockEmbeddings(2) });
-    await store.load();
-    await store.add({ id: 'a', document: 'keep', metadata: { role: 'x' } });
-    await store.add({ id: 'b', document: 'drop', metadata: { role: 'y' } });
-    await store.add({ id: 'c', document: 'keep-too', metadata: { role: 'x' } });
-
-    await store.delete({ predicate: (row) => row.metadata!.role === 'y' });
-
-    const res = await store.query({ queryText: 'keep', nResults: 10 });
-    const ids = new Set(res.map((r) => r.id));
-    expect(ids.has('b')).toBe(false);
-  });
-
-  test('delete() supports complex predicates', async () => {
+  test('delete() by metadata predicate keeps the non-matching rows', async () => {
     const store = new MemoryVectorStore({ embeddings: new MockEmbeddings(2) });
     await store.load();
     await store.add({ id: 'a', document: 'doc-a', metadata: { keep: false } });
