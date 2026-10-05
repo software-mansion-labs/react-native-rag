@@ -7,6 +7,7 @@ interface ChatInputProps {
   onAddDocument: () => void;
   onToggleAugmentedGeneration: () => void;
   onMessageSubmit: () => void;
+  onInterrupt: () => void;
   augmentedGeneration: boolean;
   isReady: boolean;
   isGenerating: boolean;
@@ -18,11 +19,12 @@ export const ChatInput = ({
   onAddDocument,
   onToggleAugmentedGeneration,
   onMessageSubmit,
+  onInterrupt,
   isReady,
   isGenerating,
   augmentedGeneration,
 }: ChatInputProps) => {
-  const messageSubmitBtnDisabled = !isReady || isGenerating || !message.trim();
+  const messageSubmitBtnDisabled = !isReady || !message.trim();
 
   return (
     <View style={chatInputStyles.container}>
@@ -47,15 +49,22 @@ export const ChatInput = ({
               <View style={chatInputStyles.disabledOverlay} />
             )}
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={onMessageSubmit}
-            disabled={messageSubmitBtnDisabled}
-            style={
-              messageSubmitBtnDisabled && chatInputStyles.submitButtonDisabled
-            }
-          >
-            <Ionicons name="arrow-up-circle" size={36} color="black" />
-          </TouchableOpacity>
+          {isGenerating ? (
+            <TouchableOpacity onPress={onInterrupt} accessibilityLabel="Stop">
+              <Ionicons name="stop-circle" size={36} color="black" />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              onPress={onMessageSubmit}
+              disabled={messageSubmitBtnDisabled}
+              accessibilityLabel="Send"
+              style={
+                messageSubmitBtnDisabled && chatInputStyles.submitButtonDisabled
+              }
+            >
+              <Ionicons name="arrow-up-circle" size={36} color="black" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </View>

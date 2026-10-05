@@ -202,14 +202,40 @@ describe('ExecuTorchLLM', () => {
     await expect(llm.generate(input, () => {})).resolves.toBe('Hello');
   });
 
-  it('maps interrupt to runner.stop and unload to dispose', async () => {
+  it('honours an interrupt that lands before the native generate starts', async () => {
+    const llm = new ExecuTorchLLM(params);
+    await llm.load();
+    const input: Message[] = [{ role: 'user', content: 'x' }];
+
+    // generate() is still fitting the history to the context window at this point.
+    let settled = false;
+    const pending = llm
+      .generate(input, () => {})
+      .then((result) => {
+        settled = true;
+        return result;
+      });
+    await llm.interrupt();
+
+    // interrupt() resolves only once the generation has settled.
+    expect(settled).toBe(true);
+    await expect(pending).resolves.toBe('');
+    expect(mockRunner.stop).toHaveBeenCalledTimes(1);
+    expect(mockRunner.generate).not.toHaveBeenCalled();
+    expect(mockPreprocessor.clear).toHaveBeenCalledTimes(1);
+
+    // A later generation is unaffected.
+    await expect(llm.generate(input, () => {})).resolves.toBe('Hello');
+  });
+
+  it('ignores interrupt without a running generation and disposes on unload', async () => {
     const llm = new ExecuTorchLLM(params);
     await llm.interrupt();
     expect(mockRunner.stop).not.toHaveBeenCalled();
 
     await llm.load();
     await llm.interrupt();
-    expect(mockRunner.stop).toHaveBeenCalledTimes(1);
+    expect(mockRunner.stop).not.toHaveBeenCalled();
 
     await llm.unload();
     expect(mockPreprocessor.dispose).toHaveBeenCalledTimes(1);

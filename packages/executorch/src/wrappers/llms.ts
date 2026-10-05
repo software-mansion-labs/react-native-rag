@@ -93,7 +93,10 @@ export class ExecuTorchLLM implements LLM {
   private preprocessor: llm.ChatPreprocessor | null = null;
   private tokenizer: nlp.Tokenizer | null = null;
   private stopTokens: readonly string[] = [];
-  private isGenerating = false;
+  /** The in-flight {@link generate} call, if any. */
+  private pending: Promise<string> | null = null;
+  /** Set by {@link interrupt} so a request that lands before the native generate starts is honoured. */
+  private interruptRequested = false;
 
   private model: LLMModel;
   private onDownloadProgress: (progress: number) => void;
@@ -175,11 +178,17 @@ export class ExecuTorchLLM implements LLM {
   }
 
   /**
-   * Interrupts the current generation. The pending {@link generate} promise
-   * resolves with the tokens produced so far.
+   * Interrupts the current generation and resolves once it has settled. The
+   * pending {@link generate} promise resolves with the tokens produced so far.
+   * Does nothing when no generation is running.
    */
   async interrupt() {
+    const { pending } = this;
+    if (!pending) return;
+    this.interruptRequested = true;
     this.runner?.stop();
+    // The caller of generate() receives its outcome; here only its completion matters.
+    await pending.catch(() => {});
   }
 
   /**
@@ -242,11 +251,33 @@ export class ExecuTorchLLM implements LLM {
       throw new Error('LLM not loaded. Call load() first.');
     }
     // The preprocessor and the KV cache are shared, so turns cannot overlap.
-    if (this.isGenerating) {
+    if (this.pending) {
       throw new Error('LLM is already generating. Call interrupt() first.');
     }
-    this.isGenerating = true;
+    this.interruptRequested = false;
 
+    const pending = this.run(
+      messages,
+      callback,
+      runner,
+      preprocessor,
+      tokenizer
+    );
+    this.pending = pending;
+    try {
+      return await pending;
+    } finally {
+      this.pending = null;
+    }
+  }
+
+  private async run(
+    messages: Message[],
+    callback: (token: string) => void,
+    runner: llm.LLMRunner,
+    preprocessor: llm.ChatPreprocessor,
+    tokenizer: nlp.Tokenizer
+  ): Promise<string> {
     const hasSystemMessage = messages.some(({ role }) => role === 'system');
     const history: Message[] =
       this.systemPrompt && !hasSystemMessage
@@ -263,6 +294,9 @@ export class ExecuTorchLLM implements LLM {
       const prompt = preprocessor.process(fitted, fitted.length, {
         addGenPrompt: true,
       });
+      // ExecuTorch clears its stop flag when the native generate starts, so an
+      // interrupt() that landed during the steps above would otherwise be lost.
+      if (this.interruptRequested) return '';
       return await wrapAsync(generateWorklet)(runner, prompt, {
         config: this.generationConfig,
         stopTokens: this.stopTokens,
@@ -276,7 +310,6 @@ export class ExecuTorchLLM implements LLM {
       throw error;
     } finally {
       preprocessor.clear();
-      this.isGenerating = false;
     }
   }
 }

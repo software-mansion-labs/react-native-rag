@@ -96,10 +96,13 @@ export default function App() {
         input: [...messages, newMessage],
         augmentedGeneration,
       });
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { role: 'assistant', content: result },
-      ]);
+      // An interrupted turn resolves with the tokens produced so far, possibly none.
+      if (result.trim()) {
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { role: 'assistant', content: result },
+        ]);
+      }
     } catch (error) {
       console.error('Error generating response:', error);
       Alert.alert('Error', 'Failed to generate response. Please try again.');
@@ -148,6 +151,7 @@ export default function App() {
             onAddDocument={openDocumentModal}
             onToggleAugmentedGeneration={handleAugmentedGeneration}
             onMessageSubmit={handleMessageSubmit}
+            onInterrupt={rag.interrupt}
             augmentedGeneration={augmentedGeneration}
             isGenerating={rag.isGenerating}
             isReady={rag.isReady}
