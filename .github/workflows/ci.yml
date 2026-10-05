@@ -10,6 +10,11 @@ on:
     types:
       - checks_requested
 
+env:
+  # No job needs react-native-executorch's native libs, and its postinstall
+  # races when installed twice (software-mansion/react-native-executorch#1510).
+  RNET_SKIP_DOWNLOAD: 1
+
 jobs:
   lint:
     runs-on: ubuntu-latest
