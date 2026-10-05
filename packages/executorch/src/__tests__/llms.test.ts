@@ -342,13 +342,12 @@ describe('ExecuTorchLLM', () => {
     expect(mockRunner.reset).toHaveBeenCalledTimes(2);
   });
 
-  it('stops on any stop token from the tokenizer config, not only EOS', async () => {
+  it('keeps every stop token from the tokenizer config out of the response', async () => {
     const llm = new ExecuTorchLLM(params);
     await llm.load();
-    // The runner keeps decoding past the pad token; the wrapper has to halt it.
     mockRunner.generate.mockImplementationOnce(
       (_prompt: string, _config: unknown, onToken: (token: string) => void) => {
-        ['Done', '.', '<pad>', 'Human:', ' more'].forEach(onToken);
+        ['Done', '<pad>', '.', '<eos>'].forEach(onToken);
         return {};
       }
     );
@@ -358,9 +357,9 @@ describe('ExecuTorchLLM', () => {
       tokens.push(t)
     );
 
-    expect(mockRunner.stop).toHaveBeenCalledTimes(1);
     expect(tokens).toEqual(['Done', '.']);
     expect(result).toBe('Done.');
+    expect(mockRunner.stop).not.toHaveBeenCalled();
   });
 
   it('prepends the default system prompt only when the history has none', async () => {

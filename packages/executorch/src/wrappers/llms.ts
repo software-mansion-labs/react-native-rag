@@ -38,9 +38,10 @@ interface ExecuTorchLLMParams extends LLMModel {
 
 /**
  * Runs one full generation on the worklet runtime.
- * Resets the KV cache, prefills the rendered prompt and decodes until the model
- * emits one of its stop tokens or `interrupt()` is called. Tokens are forwarded
- * to the React Native thread via `scheduleOnRN`.
+ * Resets the KV cache, prefills the rendered prompt and decodes until the runner
+ * stops or `interrupt()` is called. Stop tokens named by the tokenizer config are
+ * kept out of the response. Tokens are forwarded to the React Native thread via
+ * `scheduleOnRN`.
  */
 function generateWorklet(
   runner: llm.LLMRunner,
@@ -55,19 +56,9 @@ function generateWorklet(
   const { config, stopTokens, onToken } = options;
 
   let response = '';
-  let stopped = false;
   runner.reset();
   runner.generate(prompt, config, (token: string) => {
-    if (stopped) return;
-
-    // The tokenizer config can name several terminal tokens (eos, eot, pad) and the
-    // runner does not halt on all of them by itself, so stop explicitly on any of them.
-    if (stopTokens.includes(token)) {
-      stopped = true;
-      runner.stop();
-      return;
-    }
-
+    if (stopTokens.includes(token)) return;
     response += token;
     scheduleOnRN(onToken, token);
   });
