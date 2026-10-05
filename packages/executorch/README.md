@@ -58,8 +58,19 @@ Parameters:
 | -------------------- | ---------------------------- | --------------------------------------------------------------- |
 | `modelPath`          | `string`                     | URL or local path of the embedding model (`.pte`).              |
 | `tokenizerPath`      | `string`                     | URL or local path of the tokenizer (`tokenizer.json`).          |
-| `defaultPrompt`      | `string` (optional)          | Prompt prepended to every input before embedding.               |
+| `defaultPrompt`      | `string` (optional)          | Prompt prepended to inputs that have no more specific prompt below. Registry models may carry one. |
+| `documentPrompt`     | `string` (optional)          | Prompt prepended to documents being indexed. Falls back to `defaultPrompt`; `''` prepends nothing. |
+| `queryPrompt`        | `string` (optional)          | Prompt prepended to search queries. Falls back to `defaultPrompt`; `''` prepends nothing. |
 | `onDownloadProgress` | `(progress: number) => void` | Download progress callback in the `0-1` range.                  |
+
+Vector stores call `embed(text, { kind })` with `'document'` when indexing and `'query'` when searching, so asymmetric models that expect different prefixes on each side can be configured with `documentPrompt` and `queryPrompt`:
+
+```typescript
+const embeddings = new ExecuTorchEmbeddings({
+  ...models.textEmbeddings.LFM2_5_EMBEDDING_350M.DEFAULT, // ships `defaultPrompt: 'query: '`
+  documentPrompt: 'document: ',
+});
+```
 
 ### `ExecuTorchLLM`
 

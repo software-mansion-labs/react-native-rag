@@ -108,7 +108,7 @@ export class OPSQLiteVectorStore implements VectorStore {
       [
         id,
         document ?? '',
-        `[${(embedding ?? (await this.embeddings.embed(document!))).join(',')}]`,
+        `[${(embedding ?? (await this.embeddings.embed(document!, { kind: 'document' }))).join(',')}]`,
         metadata ? JSON.stringify(metadata) : null,
       ]
     );
@@ -153,7 +153,7 @@ export class OPSQLiteVectorStore implements VectorStore {
       'UPDATE vectors SET document = ?, embedding = vector(?), metadata = ? WHERE id = ?',
       [
         document ?? '',
-        `[${(embedding ?? (await this.embeddings.embed(document!))).join(',')}]`,
+        `[${(embedding ?? (await this.embeddings.embed(document!, { kind: 'document' }))).join(',')}]`,
         metadata ? JSON.stringify(metadata) : null,
         id,
       ]
@@ -214,7 +214,8 @@ export class OPSQLiteVectorStore implements VectorStore {
     }
 
     const searchEmbedding =
-      queryEmbedding ?? (await this.embeddings.embed(queryText!));
+      queryEmbedding ??
+      (await this.embeddings.embed(queryText!, { kind: 'query' }));
 
     const res = await this.db.execute(
       'SELECT id, document, embedding, metadata, (1.0 - vector_distance_cos(embedding, vector(?))) AS similarity FROM vectors ORDER BY similarity DESC',

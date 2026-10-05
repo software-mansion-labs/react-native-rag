@@ -91,6 +91,47 @@ describe('ExecuTorchEmbeddings', () => {
     await expect(embeddings.embed('x')).resolves.toEqual([0.5, -1, 2]);
   });
 
+  it('forwards the prompt matching the kind and none otherwise', async () => {
+    const embeddings = new ExecuTorchEmbeddings({
+      ...model,
+      defaultPrompt: 'default: ',
+      documentPrompt: 'passage: ',
+      queryPrompt: 'query: ',
+    });
+    await embeddings.load();
+
+    await embeddings.embed('a', { kind: 'document' });
+    await embeddings.embed('b', { kind: 'query' });
+    await embeddings.embed('c');
+
+    // Without a per-call prompt the embedder falls back to the model's defaultPrompt.
+    expect(mockExecutorch.createTextEmbedder).toHaveBeenCalledWith(
+      expect.objectContaining({ defaultPrompt: 'default: ' })
+    );
+    expect(mockEmbedder.embed.mock.calls).toEqual([
+      ['a', 'passage: '],
+      ['b', 'query: '],
+      ['c', undefined],
+    ]);
+  });
+
+  it('lets an empty prompt disable the prefix for one side only', async () => {
+    const embeddings = new ExecuTorchEmbeddings({
+      ...model,
+      defaultPrompt: 'query: ',
+      documentPrompt: '',
+    });
+    await embeddings.load();
+
+    await embeddings.embed('a', { kind: 'document' });
+    await embeddings.embed('b', { kind: 'query' });
+
+    expect(mockEmbedder.embed.mock.calls).toEqual([
+      ['a', ''],
+      ['b', undefined],
+    ]);
+  });
+
   it('throws when embedding before load', async () => {
     const embeddings = new ExecuTorchEmbeddings(model);
     await expect(embeddings.embed('x')).rejects.toThrow(/load\(\)/);
@@ -102,7 +143,7 @@ describe('ExecuTorchEmbeddings', () => {
 
     const vector = await embeddings.embed('hello');
 
-    expect(mockEmbedder.embed).toHaveBeenCalledWith('hello');
+    expect(mockEmbedder.embed).toHaveBeenCalledWith('hello', undefined);
     expect(Array.isArray(vector)).toBe(true);
     expect(vector).toEqual([0.5, -1, 2]);
   });

@@ -80,7 +80,9 @@ export class MemoryVectorStore implements VectorStore {
     this.rows.set(id, {
       id,
       document,
-      embedding: embedding ?? (await this.embeddings.embed(document!)),
+      embedding:
+        embedding ??
+        (await this.embeddings.embed(document!, { kind: 'document' })),
       metadata,
     });
 
@@ -122,7 +124,9 @@ export class MemoryVectorStore implements VectorStore {
       document: document ?? oldRow.document,
       embedding:
         embedding ??
-        (document ? await this.embeddings.embed(document!) : oldRow.embedding),
+        (document
+          ? await this.embeddings.embed(document!, { kind: 'document' })
+          : oldRow.embedding),
       metadata: metadata ?? oldRow.metadata,
     });
   }
@@ -174,7 +178,8 @@ export class MemoryVectorStore implements VectorStore {
     }
 
     const searchEmbedding =
-      queryEmbedding ?? (await this.embeddings.embed(queryText!));
+      queryEmbedding ??
+      (await this.embeddings.embed(queryText!, { kind: 'query' }));
 
     return Array.from(this.rows.values())
       .map((r) => ({ ...r, similarity: cosine(searchEmbedding, r.embedding) }))

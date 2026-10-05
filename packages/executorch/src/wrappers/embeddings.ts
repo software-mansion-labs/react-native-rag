@@ -1,4 +1,4 @@
-import type { Embeddings } from 'react-native-rag';
+import type { EmbedOptions, Embeddings } from 'react-native-rag';
 import {
   createTextEmbedder,
   download,
@@ -14,8 +14,23 @@ interface ExecuTorchEmbeddingsParams {
   modelPath: string;
   /** Path or URL of the tokenizer (`tokenizer.json`). */
   tokenizerPath: string;
-  /** Optional prompt prepended to every input before embedding. */
+  /**
+   * Prompt prepended to inputs that have no more specific prompt below.
+   * Models from the `react-native-executorch` registry may carry one.
+   */
   defaultPrompt?: string;
+  /**
+   * Prompt prepended to documents being indexed, for asymmetric models that
+   * expect e.g. `'passage: '` on that side. Falls back to `defaultPrompt`;
+   * pass `''` to prepend nothing.
+   */
+  documentPrompt?: string;
+  /**
+   * Prompt prepended to search queries, for asymmetric models that expect
+   * e.g. `'query: '` on that side. Falls back to `defaultPrompt`; pass `''`
+   * to prepend nothing.
+   */
+  queryPrompt?: string;
   /** Download progress callback (0-1). */
   onDownloadProgress?: (progress: number) => void;
 }
@@ -30,6 +45,8 @@ export class ExecuTorchEmbeddings implements Embeddings {
   /** Whether the most recent call was {@link load} rather than {@link unload}. */
   private wantLoaded = false;
   private model: TextEmbedderModel;
+  private documentPrompt: string | undefined;
+  private queryPrompt: string | undefined;
   private onDownloadProgress: (progress: number) => void;
 
   /**
@@ -37,16 +54,22 @@ export class ExecuTorchEmbeddings implements Embeddings {
    * @param params - Parameters for the instance.
    * @param params.modelPath - Path or URL of the embedding model.
    * @param params.tokenizerPath - Path or URL of the tokenizer.
-   * @param params.defaultPrompt - Optional prompt prepended to every input.
+   * @param params.defaultPrompt - Prompt prepended to inputs without a more specific prompt.
+   * @param params.documentPrompt - Prompt prepended to documents being indexed.
+   * @param params.queryPrompt - Prompt prepended to search queries.
    * @param params.onDownloadProgress - Download progress callback (0-1).
    */
   constructor({
     modelPath,
     tokenizerPath,
     defaultPrompt,
+    documentPrompt,
+    queryPrompt,
     onDownloadProgress = () => {},
   }: ExecuTorchEmbeddingsParams) {
     this.model = { modelPath, tokenizerPath, defaultPrompt };
+    this.documentPrompt = documentPrompt;
+    this.queryPrompt = queryPrompt;
     this.onDownloadProgress = onDownloadProgress;
   }
 
@@ -99,12 +122,20 @@ export class ExecuTorchEmbeddings implements Embeddings {
   /**
    * Generates an embedding vector for the given text.
    * @param text - Input string to embed.
+   * @param options - Whether `text` is a document or a query, which selects the prompt.
    * @returns Promise that resolves to the embedding vector.
    */
-  async embed(text: string): Promise<number[]> {
+  async embed(text: string, options?: EmbedOptions): Promise<number[]> {
     if (!this.embedder) {
       throw new Error('Text embedder not loaded. Call load() first.');
     }
-    return Array.from(await this.embedder.embed(text));
+    const prompt =
+      options?.kind === 'document'
+        ? this.documentPrompt
+        : options?.kind === 'query'
+          ? this.queryPrompt
+          : undefined;
+    // With no prompt for this kind the embedder applies the model's `defaultPrompt`.
+    return Array.from(await this.embedder.embed(text, prompt));
   }
 }
