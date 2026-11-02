@@ -146,9 +146,8 @@ export class ExecuTorchLLM implements LLM {
       resolved.tokenizerConfigPath,
       'utf8'
     );
-    const { chatTemplate, stopTokens } = llm.parseTokenizerConfig(
-      JSON.parse(tokenizerConfigStr)
-    );
+    const { chatTemplate, bosToken, eosToken, stopTokens } =
+      llm.parseTokenizerConfig(JSON.parse(tokenizerConfigStr));
 
     // Everything native is owned by the scope, so a failure halfway releases what was already created.
     const scope = createResourceScope();
@@ -156,6 +155,8 @@ export class ExecuTorchLLM implements LLM {
       const preprocessor = scope.track(
         llm.createChatPreprocessor({
           chatTemplate,
+          bosToken,
+          eosToken,
           modalities: resolved.modalities,
           preprocessorConfig: resolved.preprocessorConfig,
         })
@@ -164,7 +165,7 @@ export class ExecuTorchLLM implements LLM {
         await wrapAsync(nlp.loadTokenizer)(resolved.tokenizerPath)
       );
       const runner = scope.track(
-        await wrapAsync(llm.createLLMRunner)(
+        await llm.createLLMRunner(
           resolved.modelPath,
           resolved.tokenizerPath,
           resolved.modalities
@@ -232,12 +233,12 @@ export class ExecuTorchLLM implements LLM {
     preprocessor: llm.ChatPreprocessor,
     tokenizer: nlp.Tokenizer
   ): Promise<Message[]> {
-    const { maxSeqLen } = runner.getKVCacheState();
+    const { maxContextLen } = runner.getKVCacheState();
     const reserve = Math.min(
       this.generationConfig.maxNewTokens ?? DEFAULT_RESPONSE_RESERVE_TOKENS,
-      Math.floor(maxSeqLen / 2)
+      Math.floor(maxContextLen / 2)
     );
-    const budget = maxSeqLen - reserve;
+    const budget = maxContextLen - reserve;
     const countTokens = wrapAsync(countTokensWorklet);
 
     let fitted = messages;
@@ -313,14 +314,14 @@ export class ExecuTorchLLM implements LLM {
       const prompt = preprocessor.process(fitted, fitted.length, {
         addGenPrompt: true,
       });
-      // ExecuTorch clears its stop flag only once decoding starts, after the
-      // prefill, so an interrupt() that lands before then would otherwise be lost.
+      // ExecuTorch clears its stop flag when generate starts, so an interrupt()
+      // that lands before then would otherwise be lost.
       if (this.interruptRequested) return '';
       return await wrapAsync(generateWorklet)(runner, prompt, {
         config: this.generationConfig,
         stopTokens: this.stopTokens,
         onToken: (token: string) => {
-          // An interrupt() during the dispatch or the prefill is repeated now that decoding runs.
+          // An interrupt() during the dispatch is repeated now that decoding runs.
           if (this.interruptRequested) this.runner?.stop();
           callback(token);
         },
