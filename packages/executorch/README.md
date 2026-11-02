@@ -8,17 +8,17 @@ This package provides implementations for the `Embeddings` and `LLM` interfaces 
 npm install @react-native-rag/executorch react-native-executorch react-native-worklets react-native-blob-util
 ```
 
-`react-native-worklets` and `react-native-blob-util` are peer dependencies of `react-native-executorch` 0.10 and of this package. On Expo SDK 55 and 56 install `react-native-worklets` with your package manager rather than `npx expo install`, which would pick an older bundled version.
+`react-native-worklets` and `react-native-blob-util` are peer dependencies of `react-native-executorch` 0.11 and of this package (`react-native-blob-util` 0.24.11+). On Expo SDK 55 and 56 install `react-native-worklets` with your package manager rather than `npx expo install`, which would pick an older bundled version.
 
 > [!IMPORTANT]
 > **Babel plugin.** This package ships worklets, so your app must compile them. Expo's `babel-preset-expo` does it automatically once `react-native-worklets` is installed. In a bare React Native app add `'react-native-worklets/plugin'` as the **last** entry of `plugins` in `babel.config.js`, then restart Metro with `--reset-cache`. Without it `generate()` fails at runtime.
 
-Requirements inherited from `react-native-executorch` 0.10:
+Requirements inherited from `react-native-executorch` 0.11:
 
-- React Native 0.83+ (bare) or Expo SDK 55+ with development builds. Expo Go is not supported. The upper bound comes from `react-native-worklets`: 0.10.x and 0.11.x support React Native 0.83 to 0.86, 0.12.x up to 0.87.
+- React Native 0.83+ (bare) or Expo SDK 55+ with development builds. Expo Go is not supported. The upper bound comes from `react-native-worklets`: 0.10.x and 0.11.x support React Native 0.83 to 0.86, 0.12.x up to 0.87, 0.13.x 0.86 to 0.88.
 - The New Architecture enabled.
 - iOS 17.0+ and Android 13+ (`minSdkVersion` 26+).
-- Optional, Android only: `@kesha-antonov/react-native-background-downloader` (4.4.0+) lets model downloads continue in the background. Without it downloads use the system `DownloadManager`.
+- Optional: `@kesha-antonov/react-native-background-downloader` (4.4.0+) keeps model downloads running in the background on iOS and Android. Without it downloads pause while the app is suspended.
 
 With Expo, set the iOS deployment target and the Android `minSdkVersion` through [`expo-build-properties`](https://docs.expo.dev/versions/latest/sdk/build-properties/) (Expo defaults to `minSdkVersion` 24):
 
@@ -133,6 +133,10 @@ const App = () => {
   // ... your component logic
 };
 ```
+
+## Migrating from 0.10
+
+- Requires `react-native-executorch` ^0.11.0 and `react-native-blob-util` 0.24.11+. The adapter API is unchanged.
 
 ## Migrating from 0.9
 

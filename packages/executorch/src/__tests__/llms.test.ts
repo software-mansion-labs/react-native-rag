@@ -6,7 +6,7 @@ jest.mock('react-native-executorch', () => {
     reset: jest.fn(),
     stop: jest.fn(),
     dispose: jest.fn(),
-    getKVCacheState: jest.fn(() => ({ maxSeqLen: 2048 })),
+    getKVCacheState: jest.fn(() => ({ maxContextLen: 2048 })),
     generate: jest.fn(
       (_prompt: string, _config: unknown, onToken: (token: string) => void) => {
         ['Hel', 'lo', '<eos>'].forEach(onToken);
@@ -54,11 +54,12 @@ jest.mock('react-native-executorch', () => {
     llm: {
       parseTokenizerConfig: jest.fn(() => ({
         chatTemplate: 'TEMPLATE',
+        bosToken: '<bos>',
         eosToken: '<eos>',
         stopTokens: ['<eos>', '<pad>'],
       })),
       createChatPreprocessor: jest.fn(() => preprocessor),
-      createLLMRunner: jest.fn(() => runner),
+      createLLMRunner: jest.fn(async () => runner),
     },
   };
 });
@@ -101,7 +102,11 @@ describe('ExecuTorchLLM', () => {
     );
     expect(onDownloadProgress).toHaveBeenCalledWith(1);
     expect(mockExecutorch.llm.createChatPreprocessor).toHaveBeenCalledWith(
-      expect.objectContaining({ chatTemplate: 'TEMPLATE' })
+      expect.objectContaining({
+        chatTemplate: 'TEMPLATE',
+        bosToken: '<bos>',
+        eosToken: '<eos>',
+      })
     );
     expect(mockExecutorch.llm.createLLMRunner).toHaveBeenCalledTimes(1);
     expect(mockExecutorch.llm.createLLMRunner).toHaveBeenCalledWith(
@@ -339,7 +344,7 @@ describe('ExecuTorchLLM', () => {
   });
   it('releases the preprocessor and tokenizer when the runner fails to load', async () => {
     const llm = new ExecuTorchLLM(params);
-    mockExecutorch.llm.createLLMRunner.mockImplementationOnce(() => {
+    mockExecutorch.llm.createLLMRunner.mockImplementationOnce(async () => {
       throw new Error('load failed');
     });
 
@@ -415,8 +420,8 @@ describe('ExecuTorchLLM', () => {
   });
 
   it('drops the oldest turns until the prompt fits the context window', async () => {
-    // maxSeqLen 40, maxNewTokens 10 -> 30 "tokens" (characters) of prompt budget.
-    mockRunner.getKVCacheState.mockReturnValue({ maxSeqLen: 40 });
+    // maxContextLen 40, maxNewTokens 10 -> 30 "tokens" (characters) of prompt budget.
+    mockRunner.getKVCacheState.mockReturnValue({ maxContextLen: 40 });
     const llm = new ExecuTorchLLM({
       ...params,
       generationConfig: { maxNewTokens: 10 },
@@ -443,7 +448,7 @@ describe('ExecuTorchLLM', () => {
   });
 
   it('keeps system and last message even when they alone exceed the budget', async () => {
-    mockRunner.getKVCacheState.mockReturnValue({ maxSeqLen: 40 });
+    mockRunner.getKVCacheState.mockReturnValue({ maxContextLen: 40 });
     const llm = new ExecuTorchLLM(params);
     await llm.load();
 

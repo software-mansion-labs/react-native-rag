@@ -4088,15 +4088,15 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@react-native-rag/executorch@workspace:packages/executorch"
   dependencies:
-    react-native-blob-util: ^0.24.0
-    react-native-executorch: ^0.10.4
+    react-native-blob-util: ^0.24.11
+    react-native-executorch: ^0.11.0
     react-native-rag: "workspace:*"
     react-native-worklets: ^0.10.0
   peerDependencies:
-    react-native-blob-util: ^0.24.0
-    react-native-executorch: ^0.10.4
-    react-native-rag: ^0.10.0
-    react-native-worklets: ">=0.10.0 <0.13.0"
+    react-native-blob-util: ^0.24.11
+    react-native-executorch: ^0.11.0
+    react-native-rag: ^0.11.0
+    react-native-worklets: ">=0.10.0 <0.14.0"
   languageName: unknown
   linkType: soft
 
@@ -4108,7 +4108,7 @@ __metadata:
     react-native-rag: "workspace:*"
   peerDependencies:
     "@op-engineering/op-sqlite": ^15.2.7
-    react-native-rag: ^0.10.0
+    react-native-rag: ^0.11.0
   languageName: unknown
   linkType: soft
 
@@ -13374,15 +13374,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-blob-util@npm:^0.24.0":
-  version: 0.24.11
-  resolution: "react-native-blob-util@npm:0.24.11"
+"react-native-blob-util@npm:^0.24.11":
+  version: 0.24.12
+  resolution: "react-native-blob-util@npm:0.24.12"
   dependencies:
     base-64: 1.0.0
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 18a9a97f0ee8ba3f3cb2f13722ebfc3a629676acd2351b5023f367c4cce79962206338dd1280d0c01f274aa39612fd09e263216bb30f18431bcb49ce2533b61d
+  checksum: a184342f8d8304a1418101897d0c5d22cb620f6b7b679fa225733084f774d8cc6bcda075a42e084cae69c67d11501a3530eb98eb635ac036b44eb0bc01d8835f
   languageName: node
   linkType: hard
 
@@ -13427,9 +13427,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-executorch@npm:^0.10.4":
-  version: 0.10.4
-  resolution: "react-native-executorch@npm:0.10.4"
+"react-native-executorch@npm:^0.11.0":
+  version: 0.11.0
+  resolution: "react-native-executorch@npm:0.11.0"
   dependencies:
     "@huggingface/jinja": ^0.5.9
     jsonrepair: ^3.12.0
@@ -13440,12 +13440,12 @@ __metadata:
     "@kesha-antonov/react-native-background-downloader": ">=4.4.0"
     react: "*"
     react-native: "*"
-    react-native-blob-util: ^0.24.0
-    react-native-worklets: ">=0.10.0 <0.13.0"
+    react-native-blob-util: ">=0.24.11"
+    react-native-worklets: ">=0.10.0 <0.14.0"
   peerDependenciesMeta:
     "@kesha-antonov/react-native-background-downloader":
       optional: true
-  checksum: 51cbcec00e79f2264427a208016e040b17a9fa79587b54ef45ac0ad731bd7f74a5c92f88d2be1d700249ac46fb0a8721579dbc564dc476c011cc16fffa13c19b
+  checksum: 303c5ad61ecb51dbe2dbde3f393844091a75589d00cce79a5735c87e5785893ebbd0568edb947f7ffa0e16745e6f8b29db138fed6184872f464aba90a707a38d
   languageName: node
   linkType: hard
 
@@ -13478,9 +13478,9 @@ __metadata:
     react: 19.2.3
     react-dom: 19.2.3
     react-native: 0.86.3
-    react-native-blob-util: ^0.24.0
+    react-native-blob-util: ^0.24.11
     react-native-builder-bob: ^0.43.1
-    react-native-executorch: ^0.10.4
+    react-native-executorch: ^0.11.0
     react-native-monorepo-config: ^0.1.9
     react-native-rag: "workspace:*"
     react-native-safe-area-context: ~5.7.0
