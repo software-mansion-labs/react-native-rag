@@ -211,8 +211,13 @@ Contributions are welcome! See the [contributing guide](CONTRIBUTING.md) to lear
 
 MIT
 
-## React Native RAG is created by Software Mansion
+## React Native RAG is created by Software Mansion AI Labs
 
-Since 2012 [Software Mansion](https://swmansion.com) is a software agency with experience in building web and mobile apps. We are Core React Native Contributors and experts in dealing with all kinds of React Native issues. We can help you build your next dream product – [Hire us](https://swmansion.com/contact/projects?utm_source=react-native-rag&utm_medium=readme).
+<a href="https://ai.swmansion.com/?utm_source=react-native-rag&utm_medium=readme">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://github.com/software-mansion/react-native-executorch/raw/main/docs/static/img/swm_ai_labs_dark.svg">
+    <img src="https://github.com/software-mansion/react-native-executorch/raw/main/docs/static/img/swm_ai_labs.svg" alt="Software Mansion AI Labs" width="122" height="80" align="left">
+  </picture>
+</a>
 
-[![swm](https://logo.swmansion.com/logo?color=white&variant=desktop&width=150&tag=react-native-rag-github 'Software Mansion')](https://swmansion.com)
+We're an end-to-end AI development lab focused on local and hybrid AI. We build and fine-tune models, deploy them anywhere and turn them into agents that solve real business problems. [Hire us](https://ai.swmansion.com/?utm_source=react-native-rag&utm_medium=readme#contact).
